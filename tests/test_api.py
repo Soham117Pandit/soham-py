@@ -134,7 +134,7 @@ class TestVersion:
 
     def test_version_exists(self):
         assert hasattr(soham_py, "__version__")
-        assert soham_py.__version__ == "0.1.1"
+        assert soham_py.__version__ == "0.1.2"
 
     def test_author_exists(self):
         assert soham_py.__author__ == "Soham Pandit"
