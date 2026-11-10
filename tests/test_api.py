@@ -17,43 +17,62 @@ class TestConvenienceFunctions:
     def test_dbms_returns_string(self):
         assert isinstance(soham_py.dbms(1), str)
 
-    @pytest.mark.parametrize("number", range(1, 11))
-    def test_ds_all_10(self, number):
-        assert soham_py.ds(number) == ""
-
-    @pytest.mark.parametrize("number", range(1, 11))
-    def test_wt_all_10(self, number):
-        assert soham_py.wt(number) == ""
-
-    def test_dbms_all_10(self):
+    # Existing practical containing code
+    def test_existing_practical_containing_code(self):
         assert soham_py.dbms(1) == "practical 1"
         assert soham_py.dbms(2) == "practical 2"
+
+    # Existing empty practical files
+    def test_existing_empty_practical_files_ds(self):
+        for number in range(1, 11):
+            assert soham_py.ds(number) == ""
+
+    def test_existing_empty_practical_files_wt(self):
+        for number in range(1, 11):
+            assert soham_py.wt(number) == ""
+
+    def test_existing_empty_practical_files_dbms(self):
         for number in range(3, 11):
             assert soham_py.dbms(number) == ""
 
-    # Test missing practical numbers return plain-text message
-    def test_dbms_15_returns_missing_message(self):
+    # Missing practical numbers return friendly plain-text message
+    def test_dbms_11_returns_friendly_message(self):
         """Specifically verify the example from the specification."""
-        assert soham_py.dbms(15) == "No practical file present for DBMS practical 15."
+        assert soham_py.dbms(11) == "There is no file present for DBMS practical 11."
 
-    def test_ds_missing_practicals(self):
-        assert soham_py.ds(15) == "No practical file present for DS practical 15."
-        assert soham_py.ds(99) == "No practical file present for DS practical 99."
+    # Practical numbers greater than 10 across all 3 subjects
+    def test_ds_practical_greater_than_10(self):
+        assert soham_py.ds(11) == "There is no file present for DS practical 11."
+        assert soham_py.ds(15) == "There is no file present for DS practical 15."
+        assert soham_py.ds(99) == "There is no file present for DS practical 99."
 
-    def test_wt_missing_practicals(self):
-        assert soham_py.wt(15) == "No practical file present for WT practical 15."
-        assert soham_py.wt(100) == "No practical file present for WT practical 100."
+    def test_wt_practical_greater_than_10(self):
+        assert soham_py.wt(11) == "There is no file present for WT practical 11."
+        assert soham_py.wt(15) == "There is no file present for WT practical 15."
+        assert soham_py.wt(100) == "There is no file present for WT practical 100."
 
-    def test_dbms_missing_practicals(self):
-        assert soham_py.dbms(11) == "No practical file present for DBMS practical 11."
-        assert soham_py.dbms(25) == "No practical file present for DBMS practical 25."
+    def test_dbms_practical_greater_than_10(self):
+        assert soham_py.dbms(11) == "There is no file present for DBMS practical 11."
+        assert soham_py.dbms(15) == "There is no file present for DBMS practical 15."
+        assert soham_py.dbms(25) == "There is no file present for DBMS practical 25."
 
-    # Test invalid numbers
+    # Zero and negative practical numbers across all 3 subjects
     @pytest.mark.parametrize("invalid_num", [0, -1, -50])
-    def test_non_positive_numbers_raise_value_error(self, invalid_num):
+    def test_ds_zero_and_negative_raise_value_error(self, invalid_num):
         with pytest.raises(ValueError, match="positive integer"):
             soham_py.ds(invalid_num)
 
+    @pytest.mark.parametrize("invalid_num", [0, -1, -50])
+    def test_wt_zero_and_negative_raise_value_error(self, invalid_num):
+        with pytest.raises(ValueError, match="positive integer"):
+            soham_py.wt(invalid_num)
+
+    @pytest.mark.parametrize("invalid_num", [0, -1, -50])
+    def test_dbms_zero_and_negative_raise_value_error(self, invalid_num):
+        with pytest.raises(ValueError, match="positive integer"):
+            soham_py.dbms(invalid_num)
+
+    # Non-integer types
     @pytest.mark.parametrize("invalid_type", ["one", None, 3.14, True])
     def test_non_integer_numbers_raise_value_error(self, invalid_type):
         with pytest.raises(ValueError, match="must be an integer"):

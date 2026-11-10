@@ -39,31 +39,38 @@ class TestGetPractical:
         result = get_practical(subject, number)
         assert isinstance(result, str)
 
-    def test_empty_practical_returns_empty_string(self):
-        """Empty practical files must return empty string."""
+    def test_existing_empty_practical_returns_empty_string(self):
+        """Existing empty practical files must return empty string."""
         assert get_practical("ds", 1) == ""
         assert get_practical("wt", 1) == ""
+        assert get_practical("dbms", 3) == ""
 
-    def test_populated_practical_returns_content(self):
-        """Populated practical files must return their actual contents."""
+    def test_existing_populated_practical_returns_code(self):
+        """Existing populated practical files must return their actual contents."""
         assert get_practical("dbms", 1) == "practical 1"
         assert get_practical("dbms", 2) == "practical 2"
 
-    # Missing practical numbers return plain-text message
+    # Missing practical numbers return friendly plain-text message
     @pytest.mark.parametrize("number", [11, 12, 15, 20, 99, 100])
     def test_missing_practical_returns_plain_text_message_ds(self, number):
         msg = get_practical("ds", number)
-        assert msg == f"No practical file present for DS practical {number}."
+        assert msg == f"There is no file present for DS practical {number}."
 
     @pytest.mark.parametrize("number", [11, 12, 15, 20, 99, 100])
     def test_missing_practical_returns_plain_text_message_wt(self, number):
         msg = get_practical("wt", number)
-        assert msg == f"No practical file present for WT practical {number}."
+        assert msg == f"There is no file present for WT practical {number}."
 
     @pytest.mark.parametrize("number", [11, 12, 15, 20, 99, 100])
     def test_missing_practical_returns_plain_text_message_dbms(self, number):
         msg = get_practical("dbms", number)
-        assert msg == f"No practical file present for DBMS practical {number}."
+        assert msg == f"There is no file present for DBMS practical {number}."
+
+    # Practical number greater than 10
+    def test_practical_number_greater_than_10_missing(self):
+        assert get_practical("dbms", 11) == "There is no file present for DBMS practical 11."
+        assert get_practical("ds", 15) == "There is no file present for DS practical 15."
+        assert get_practical("wt", 25) == "There is no file present for WT practical 25."
 
     # Invalid subject values and types
     def test_invalid_subject_name_raises_value_error(self):
@@ -80,9 +87,9 @@ class TestGetPractical:
         with pytest.raises(ValueError, match="Subject name cannot be empty"):
             get_practical(empty_subject, 1)
 
-    # Invalid practical numbers (<= 0 or non-integer)
-    @pytest.mark.parametrize("number", [0, -1, -100])
-    def test_non_positive_number_raises_value_error(self, number):
+    # Zero and negative practical numbers
+    @pytest.mark.parametrize("number", [0, -1, -10, -100])
+    def test_zero_and_negative_numbers_raise_value_error(self, number):
         with pytest.raises(ValueError, match="positive integer"):
             get_practical("ds", number)
 
@@ -114,6 +121,7 @@ class TestNonEmptyContent:
 
     def test_retrieval_preserves_multiline_and_formatting(self):
         mock_resource = MagicMock()
+        mock_resource.is_file.return_value = True
         mock_resource.read_text.return_value = "def add(a, b):\n    '''Add two numbers.'''\n    return a + b\n"
 
         mock_pkg = MagicMock()
@@ -128,27 +136,28 @@ class TestNonEmptyContent:
 # ── Error Handling & Resource Isolation ─────────────────────────────
 
 class TestErrorHandling:
-    """Missing resources return plain text notice without hiding unrelated errors."""
+    """Missing resources return friendly notice without raising FileNotFoundError."""
 
     def test_missing_resource_package_returns_notice(self):
         with patch("soham_py.core.files", side_effect=ModuleNotFoundError("No module named 'fake'")):
             res = get_practical("ds", 1)
-            assert res == "No practical file present for DS practical 1."
+            assert res == "There is no file present for DS practical 1."
 
     def test_missing_file_returns_notice(self):
         mock_resource = MagicMock()
-        mock_resource.read_text.side_effect = FileNotFoundError("No such file")
+        mock_resource.is_file.return_value = False
 
         mock_pkg = MagicMock()
         mock_pkg.joinpath.return_value = mock_resource
 
         with patch("soham_py.core.files", return_value=mock_pkg):
             res = get_practical("ds", 1)
-            assert res == "No practical file present for DS practical 1."
+            assert res == "There is no file present for DS practical 1."
 
     def test_unrelated_exception_is_not_hidden(self):
         """PermissionError or UnicodeDecodeError must NOT be swallowed or disguised."""
         mock_resource = MagicMock()
+        mock_resource.is_file.return_value = True
         mock_resource.read_text.side_effect = PermissionError("Permission denied")
 
         mock_pkg = MagicMock()
@@ -186,15 +195,20 @@ class TestListPracticals:
     def test_skips_non_practical_and_non_integer_files(self):
         """Verify that __init__.py, other files, or non-numeric suffixes are ignored."""
         class MockItem:
-            def __init__(self, name):
+            def __init__(self, name, is_file_val=True):
                 self.name = name
+                self._is_file = is_file_val
+
+            def is_file(self):
+                return self._is_file
 
         mock_items = [
-            MockItem("__init__.py"),
-            MockItem("practical1.txt"),
-            MockItem("practical2.txt"),
-            MockItem("practical_extra.txt"),
-            MockItem("notes.txt"),
+            MockItem("__init__.py", True),
+            MockItem("practical1.txt", True),
+            MockItem("practical2.txt", True),
+            MockItem("practical_extra.txt", True),
+            MockItem("notes.txt", True),
+            MockItem("practical3.txt", False),  # Directory, not a file
         ]
         mock_pkg = MagicMock()
         mock_pkg.iterdir.return_value = mock_items
@@ -256,13 +270,13 @@ class TestNoExecution:
             "sys.exit(1)\n"
         )
         mock_resource = MagicMock()
+        mock_resource.is_file.return_value = True
         mock_resource.read_text.return_value = dangerous_code
 
         mock_pkg = MagicMock()
         mock_pkg.joinpath.return_value = mock_resource
 
         with patch("soham_py.core.files", return_value=mock_pkg):
-            # If get_practical executed code, this would raise RuntimeError or SystemExit
             result = get_practical("ds", 1)
             assert result == dangerous_code
             assert "RuntimeError" in result
@@ -271,6 +285,7 @@ class TestNoExecution:
         """Invalid Python syntax must be safely returned as plain text."""
         broken_code = "def def class for while return ;;;; {{}}"
         mock_resource = MagicMock()
+        mock_resource.is_file.return_value = True
         mock_resource.read_text.return_value = broken_code
 
         mock_pkg = MagicMock()

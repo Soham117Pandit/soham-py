@@ -57,13 +57,13 @@ class TestSaveBasic:
         assert dest.exists()
 
     def test_save_missing_practical_writes_notice(self, tmp_path):
-        dest = tmp_path / "dbms15.txt"
-        save("dbms", 15, str(dest))
-        assert dest.read_text(encoding="utf-8") == "No practical file present for DBMS practical 15."
+        dest = tmp_path / "dbms11.txt"
+        save("dbms", 11, str(dest))
+        assert dest.read_text(encoding="utf-8") == "There is no file present for DBMS practical 11."
 
         dest_ds = tmp_path / "ds20.txt"
         save("ds", 20, str(dest_ds))
-        assert dest_ds.read_text(encoding="utf-8") == "No practical file present for DS practical 20."
+        assert dest_ds.read_text(encoding="utf-8") == "There is no file present for DS practical 20."
 
 
 # ── Multiline and Unicode Content Tests ─────────────────────────────

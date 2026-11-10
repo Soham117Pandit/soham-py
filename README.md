@@ -59,7 +59,7 @@ soham_py.wt(5)       # Web Technology practical 5
 soham_py.dbms(10)    # DBMS practical 10
 ```
 
-Returns the complete contents of the `.txt` file as a Python string. Empty files return `""`.
+Returns the complete contents of the `.txt` file as a Python string. Empty files return `""`. If the requested practical file does not exist, returns a friendly notice (e.g., `"There is no file present for DBMS practical 11."`).
 
 ### List Practicals
 
@@ -155,13 +155,13 @@ src/soham_py/practicals/
 
 ## Error Handling
 
-| Situation                | Error Raised        |
-|--------------------------|---------------------|
-| Invalid subject name     | `ValueError`        |
-| Invalid practical number | `ValueError`        |
-| Missing practical file   | `FileNotFoundError` |
-| Empty search query       | `ValueError`        |
-| Empty practical file     | Returns `""` (no error) |
+| Situation                                  | Behavior / Error Raised                        |
+|--------------------------------------------|------------------------------------------------|
+| Invalid subject name                       | `ValueError`                                   |
+| Invalid practical number (<= 0, non-int)   | `ValueError`                                   |
+| Missing practical file                     | Returns friendly notice string (no error)      |
+| Empty search query                         | `ValueError`                                   |
+| Empty practical file                       | Returns `""` (no error)                        |
 
 ---
 

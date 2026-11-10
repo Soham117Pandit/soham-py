@@ -53,7 +53,7 @@ def search(query: str) -> List[SearchResult]:
                 continue
 
             # Skip empty files or missing notices
-            if not content.strip() or content.startswith("No practical file present for "):
+            if not content.strip() or "no file present for" in content.lower():
                 continue
 
             # Case-insensitive search

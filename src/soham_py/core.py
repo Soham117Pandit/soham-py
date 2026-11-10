@@ -47,19 +47,19 @@ def get_practical(subject: str, number: int) -> str:
     subject : str
         Subject name or alias (case-insensitive).
     number : int
-        Practical number.
+        Practical number (any positive integer).
 
     Returns
     -------
     str
         The full contents of the practical file if it exists (or ``""`` if empty).
         If the practical file does not exist, returns:
-        ``"No practical file present for {SUBJECT} practical {number}."``
+        ``"There is no file present for {SUBJECT} practical {number}."``
 
     Raises
     ------
     ValueError
-        If the subject name or practical number is invalid.
+        If the subject name is invalid, or if practical number is not a positive integer.
     """
     key = resolve_subject(subject)
     _validate_practical_number(number)
@@ -69,10 +69,17 @@ def get_practical(subject: str, number: int) -> str:
 
     try:
         package_files = files(resource_package)
-        resource = package_files.joinpath(filename)
+    except (ModuleNotFoundError, FileNotFoundError):
+        return f"There is no file present for {key.upper()} practical {number}."
+
+    resource = package_files.joinpath(filename)
+    if not resource.is_file():
+        return f"There is no file present for {key.upper()} practical {number}."
+
+    try:
         return resource.read_text(encoding="utf-8")
     except (FileNotFoundError, ModuleNotFoundError):
-        return f"No practical file present for {key.upper()} practical {number}."
+        return f"There is no file present for {key.upper()} practical {number}."
 
 
 def list_practicals(subject: str) -> List[int]:
@@ -86,7 +93,7 @@ def list_practicals(subject: str) -> List[int]:
     Returns
     -------
     list of int
-        Practical numbers, e.g. ``[1, 2, 3, ..., 10]``.
+        Available practical numbers for which files actually exist.
 
     Raises
     ------
@@ -119,7 +126,7 @@ def list_practicals(subject: str) -> List[int]:
             stem = name[len("practical"):-len(".txt")]
             if stem.isdigit():
                 num = int(stem)
-                if num >= 1:
+                if num >= 1 and item.is_file():
                     numbers.append(num)
 
     return sorted(numbers)
