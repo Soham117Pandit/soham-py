@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from .core import get_practical
-from .subjects import PRACTICALS_PER_SUBJECT, SUBJECT_INFO
+from .core import get_practical, list_practicals
+from .subjects import SUBJECT_INFO
 
 
 # ── Public search result type ───────────────────────────────────────
@@ -46,14 +46,14 @@ def search(query: str) -> List[SearchResult]:
     results: List[SearchResult] = []
 
     for subject_key in sorted(SUBJECT_INFO.keys()):
-        for num in range(1, PRACTICALS_PER_SUBJECT + 1):
+        for num in list_practicals(subject_key):
             try:
                 content = get_practical(subject_key, num)
             except FileNotFoundError:
                 continue
 
-            # Skip empty files
-            if not content.strip():
+            # Skip empty files or missing notices
+            if not content.strip() or content.startswith("No practical file present for "):
                 continue
 
             # Case-insensitive search

@@ -28,15 +28,14 @@ else:  # pragma: no cover – we require >=3.9
 
 
 def _validate_practical_number(number: int) -> None:
-    """Raise ``ValueError`` if *number* is outside 1..PRACTICALS_PER_SUBJECT."""
+    """Raise ``ValueError`` if *number* is not a valid practical number."""
     if not isinstance(number, int) or isinstance(number, bool):
         raise ValueError(
             f"Practical number must be an integer, got {type(number).__name__}."
         )
-    if number < 1 or number > PRACTICALS_PER_SUBJECT:
+    if number < 1:
         raise ValueError(
-            f"Practical number must be between 1 and {PRACTICALS_PER_SUBJECT}, "
-            f"got {number}."
+            f"Practical number must be a positive integer, got {number}."
         )
 
 
@@ -48,20 +47,19 @@ def get_practical(subject: str, number: int) -> str:
     subject : str
         Subject name or alias (case-insensitive).
     number : int
-        Practical number (1–10).
+        Practical number.
 
     Returns
     -------
     str
-        The full contents of the practical file.  Returns ``""`` when the
-        file is empty.
+        The full contents of the practical file if it exists (or ``""`` if empty).
+        If the practical file does not exist, returns:
+        ``"No practical file present for {SUBJECT} practical {number}."``
 
     Raises
     ------
     ValueError
-        If the subject or practical number is invalid.
-    FileNotFoundError
-        If the underlying resource package or ``.txt`` file is missing.
+        If the subject name or practical number is invalid.
     """
     key = resolve_subject(subject)
     _validate_practical_number(number)
@@ -71,19 +69,10 @@ def get_practical(subject: str, number: int) -> str:
 
     try:
         package_files = files(resource_package)
-    except (ModuleNotFoundError, FileNotFoundError) as exc:
-        raise FileNotFoundError(
-            f"Practical package not found: {resource_package}"
-        ) from exc
-
-    resource = package_files.joinpath(filename)
-
-    try:
+        resource = package_files.joinpath(filename)
         return resource.read_text(encoding="utf-8")
-    except FileNotFoundError as exc:
-        raise FileNotFoundError(
-            f"Practical file not found: {key}/{filename}"
-        ) from exc
+    except (FileNotFoundError, ModuleNotFoundError):
+        return f"No practical file present for {key.upper()} practical {number}."
 
 
 def list_practicals(subject: str) -> List[int]:
@@ -130,7 +119,7 @@ def list_practicals(subject: str) -> List[int]:
             stem = name[len("practical"):-len(".txt")]
             if stem.isdigit():
                 num = int(stem)
-                if 1 <= num <= PRACTICALS_PER_SUBJECT:
+                if num >= 1:
                     numbers.append(num)
 
     return sorted(numbers)

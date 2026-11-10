@@ -29,10 +29,17 @@ class TestSaveBasic:
         dest.read_text(encoding="utf-8")
 
     def test_save_preserves_content_across_all_subjects(self, tmp_path):
-        for subject in ["ds", "wt", "dbms"]:
-            dest = tmp_path / f"{subject}.txt"
-            save(subject, 1, str(dest))
-            assert dest.read_text(encoding="utf-8") == ""
+        dest_ds = tmp_path / "ds.txt"
+        save("ds", 1, str(dest_ds))
+        assert dest_ds.read_text(encoding="utf-8") == ""
+
+        dest_wt = tmp_path / "wt.txt"
+        save("wt", 1, str(dest_wt))
+        assert dest_wt.read_text(encoding="utf-8") == ""
+
+        dest_dbms = tmp_path / "dbms.txt"
+        save("dbms", 1, str(dest_dbms))
+        assert dest_dbms.read_text(encoding="utf-8") == "practical 1"
 
     def test_save_creates_parent_directories(self, tmp_path):
         dest = tmp_path / "subdir" / "nested" / "deep" / "output.txt"
@@ -48,6 +55,15 @@ class TestSaveBasic:
         dest = tmp_path / "from_pathlib.txt"
         save("ds", 1, dest)
         assert dest.exists()
+
+    def test_save_missing_practical_writes_notice(self, tmp_path):
+        dest = tmp_path / "dbms15.txt"
+        save("dbms", 15, str(dest))
+        assert dest.read_text(encoding="utf-8") == "No practical file present for DBMS practical 15."
+
+        dest_ds = tmp_path / "ds20.txt"
+        save("ds", 20, str(dest_ds))
+        assert dest_ds.read_text(encoding="utf-8") == "No practical file present for DS practical 20."
 
 
 # ── Multiline and Unicode Content Tests ─────────────────────────────
@@ -128,10 +144,10 @@ class TestSaveErrors:
         with pytest.raises(ValueError, match="Subject name must be a string"):
             save(invalid_subject, 1, str(dest))  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize("number", [0, -1, 11, 999])
+    @pytest.mark.parametrize("number", [0, -1, -99])
     def test_save_invalid_number_raises_value_error(self, tmp_path, number):
         dest = tmp_path / "out.txt"
-        with pytest.raises(ValueError, match="between 1 and 10"):
+        with pytest.raises(ValueError, match="positive integer"):
             save("ds", number, str(dest))
 
     @pytest.mark.parametrize("empty_path", ["", "   ", "\t\n"])

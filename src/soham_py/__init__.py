@@ -24,7 +24,7 @@ from .search import search
 from .saver import save
 from .subjects import get_subjects
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Soham Pandit"
 __all__ = [
     "ds",
@@ -48,12 +48,13 @@ def ds(number: int) -> str:
     Parameters
     ----------
     number : int
-        Practical number (1–10).
+        Practical number.
 
     Returns
     -------
     str
-        Plain-text contents of the practical file.
+        Plain-text contents of the practical file if it exists,
+        or a message if missing.
     """
     return get_practical("ds", number)
 
@@ -64,12 +65,13 @@ def wt(number: int) -> str:
     Parameters
     ----------
     number : int
-        Practical number (1–10).
+        Practical number.
 
     Returns
     -------
     str
-        Plain-text contents of the practical file.
+        Plain-text contents of the practical file if it exists,
+        or a message if missing.
     """
     return get_practical("wt", number)
 
@@ -80,12 +82,13 @@ def dbms(number: int) -> str:
     Parameters
     ----------
     number : int
-        Practical number (1–10).
+        Practical number.
 
     Returns
     -------
     str
-        Plain-text contents of the practical file.
+        Plain-text contents of the practical file if it exists,
+        or a message if missing.
     """
     return get_practical("dbms", number)
 
