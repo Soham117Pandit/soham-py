@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "soham-py"
+version = "0.1.0"
+description = "College practical programs stored as plain text — retrieve them with a simple Python import."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    {name = "Soham Pandit"},
+]
+keywords = ["practicals", "college", "data-science", "web-technology", "dbms"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Education",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "build>=1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/soham-pandit/soham-py"
+Issues = "https://github.com/soham-pandit/soham-py/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"soham_py.practicals.ds" = ["*.txt"]
+"soham_py.practicals.wt" = ["*.txt"]
+"soham_py.practicals.dbms" = ["*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
