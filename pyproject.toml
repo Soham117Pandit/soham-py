@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "soham-py"
-version = "0.1.0"
+version = "0.1.1"
 description = "College practical programs stored as plain text — retrieve them with a simple Python import."
 readme = "README.md"
 license = "MIT"
