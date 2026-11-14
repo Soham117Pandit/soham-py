@@ -1,0 +1,148 @@
+Import Pima Indians Diabetes Database CSV file from https://www.kaggle.com and use Pandas Data Frame and perform the following:
+(a) Visualize the first and last 10 records.
+(b) Get the shape, index and column details.
+(c) Select/Delete the records (rows)/columns based on conditions.
+(d) Perform ranking and sorting operations.
+(e) Do required statistical operations on the given columns.
+(f) Find the count and uniqueness of the given categorical values.
+(g) Rename single/multiple columns.
+(h) Visualize data using Line Plots, Bar Plots, Histograms, Density Plots and Scatter Plots.
+
+
+
+
+
+
+pip install pandas numpy matplotlib seaborn
+
+
+
+
+
+
+
+
+# Experiment 4: Data Manipulation and Visualization
+
+# Step 1: Import required libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Step 2: Load dataset
+df = pd.read_csv("diabetes.csv")
+
+# (a) Display first and last 10 records
+print("\n--- First 10 Records ---")
+print(df.head(10))
+
+print("\n--- Last 10 Records ---")
+print(df.tail(10))
+
+# (b) Display shape, index and column details
+print("\nShape of Dataset:", df.shape)
+print("\nIndex Information:", df.index)
+print("\nColumn Names:", df.columns.tolist())
+
+# (c) Select records based on conditions
+print("\nRecords with Glucose > 120:")
+print(df[df['Glucose'] > 120].head())
+
+# Delete rows where BMI is zero
+df = df[df['BMI'] != 0]
+
+print("\nAfter deleting rows with BMI = 0:")
+print(df.shape)
+
+# Delete a column
+df_dropped = df.drop(columns=['SkinThickness'])
+
+print("\nAfter dropping SkinThickness:")
+print(df_dropped.head())
+
+# (d) Ranking and sorting operations
+
+# Rank Glucose in descending order
+df['Glucose_Rank'] = df['Glucose'].rank(
+    ascending=False
+)
+
+print("\nGlucose Ranking:")
+print(df[['Glucose', 'Glucose_Rank']].head())
+
+# Sort records by Age
+sorted_df = df.sort_values(
+    by='Age',
+    ascending=False
+)
+
+print("\nSorted by Age:")
+print(sorted_df.head())
+
+# (e) Statistical operations
+print("\n--- Statistical Summary ---")
+print(df.describe())
+
+print("\nMean Glucose:", df['Glucose'].mean())
+print("Median BMI:", df['BMI'].median())
+print("Standard Deviation of Age:", df['Age'].std())
+
+# (f) Count and uniqueness of categorical values
+print("\nUnique values in Outcome:")
+print(df['Outcome'].unique())
+
+print("\nCount of each Outcome:")
+print(df['Outcome'].value_counts())
+
+# (g) Rename single/multiple columns
+df = df.rename(columns={
+    'Pregnancies': 'Num_Pregnancies',
+    'Outcome': 'Diabetes_Result'
+})
+
+print("\nRenamed Columns:")
+print(df.columns.tolist())
+
+# (h) Data Visualization
+
+plt.figure(figsize=(15, 10))
+
+# 1. Line Plot
+plt.subplot(2, 3, 1)
+plt.plot(df['Age'], df['Glucose'])
+plt.title('Line Plot: Age vs Glucose')
+plt.xlabel('Age')
+plt.ylabel('Glucose')
+
+# 2. Bar Plot
+plt.subplot(2, 3, 2)
+df['Diabetes_Result'].value_counts().plot(kind='bar')
+plt.title('Bar Plot: Diabetes Outcome')
+plt.xlabel('Outcome')
+plt.ylabel('Count')
+
+# 3. Histogram
+plt.subplot(2, 3, 3)
+plt.hist(df['Glucose'], bins=20)
+plt.title('Histogram: Glucose')
+plt.xlabel('Glucose')
+plt.ylabel('Frequency')
+
+# 4. Density Plot
+plt.subplot(2, 3, 4)
+df['BloodPressure'].plot(kind='density')
+plt.title('Density Plot: Blood Pressure')
+plt.xlabel('Blood Pressure')
+
+# 5. Scatter Plot
+plt.subplot(2, 3, 5)
+plt.scatter(df['Glucose'], df['Insulin'])
+plt.title('Scatter: Glucose vs Insulin')
+plt.xlabel('Glucose')
+plt.ylabel('Insulin')
+
+plt.tight_layout()
+plt.show()
+
+print("\nExperiment 4 Completed Successfully!")

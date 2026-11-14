@@ -1,0 +1,79 @@
+Suppose the manufacturer claims that the mean lifetime of a ball bearing is 10000 hours. The auditing team stated that the mean lifetime is less than what is claimed. On the basis of a randomly chosen sample of 50 ball bearings as given in the dataset, at 0.05 significance level, can we reject the claim of the manufacturer? What will be your interpretation if the significance level is made as 0.01? Consider the dataset titled "Hypothesis_csv1.csv".
+
+
+
+
+
+pip install pandas numpy scipy
+
+
+
+
+
+
+
+
+# Experiment 3: Hypothesis Testing on Ball Bearing Lifetime
+
+# Step 1: Import required libraries
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+# Step 2: Load dataset
+data = pd.read_csv("Hypothesis_csv1.csv")
+
+# Step 3: Extract Lifetime column
+sample_data = data['Lifetime'].values
+
+# Step 4: Define hypotheses and significance levels
+claimed_mean = 10000
+
+alpha_05 = 0.05
+alpha_01 = 0.01
+
+# Step 5: Calculate sample statistics
+sample_size = len(sample_data)
+sample_mean = np.mean(sample_data)
+sample_std = np.std(sample_data, ddof=1)
+
+# Step 6: Perform one-sample left-tailed t-test
+t_stat, p_value = stats.ttest_1samp(
+    sample_data,
+    claimed_mean,
+    alternative='less'
+)
+
+# Step 7: Display results
+print("Sample size:", sample_size)
+print("Sample mean:", round(sample_mean, 2), "hours")
+print("Sample standard deviation:", round(sample_std, 2), "hours")
+
+print("T-statistic:", round(t_stat, 4))
+print("P-value:", format(p_value, '.6f'))
+
+# Step 8: Test at 5% significance level
+print("\nAt significance level 0.05:")
+
+if p_value < alpha_05:
+    print("Reject H0: Mean lifetime is less than 10000 hours.")
+else:
+    print("Fail to reject H0.")
+
+# Step 9: Test at 1% significance level
+print("\nAt significance level 0.01:")
+
+if p_value < alpha_01:
+    print("Reject H0: Strong evidence that mean lifetime is less than 10000 hours.")
+else:
+    print("Fail to reject H0.")
+
+# Step 10: Calculate critical t-values
+df = sample_size - 1
+
+t_crit_05 = stats.t.ppf(alpha_05, df)
+t_crit_01 = stats.t.ppf(alpha_01, df)
+
+print("\nCritical t-values:")
+print("At 0.05:", round(t_crit_05, 4))
+print("At 0.01:", round(t_crit_01, 4))

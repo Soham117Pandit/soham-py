@@ -1,0 +1,29 @@
+Write a Python program to display basic statistical details like percentile, mean, standard deviation etc. of the species of "Iris-setosa", "Iris-versicolor" and "Iris-virginica" of "iris.csv" dataset.
+
+
+
+# Experiment 1: Statistical Analysis of Iris Dataset
+
+# Step 1: Import Pandas library
+import pandas as pd
+
+# Step 2: Load the Iris dataset
+df = pd.read_csv("Iris.csv")
+
+# Step 3: Display dataset columns
+print("Columns in Dataset:")
+print(df.columns)
+
+# Step 4: Group data according to Species
+groups = df.groupby('Species')
+
+# Step 5: Display statistical details of each species
+for name, group in groups:
+
+    print("\nStatistical Summary for:", name)
+
+    print(group.describe(
+        percentiles=[0.25, 0.50, 0.75]
+    ))
+
+    print("-" * 60)

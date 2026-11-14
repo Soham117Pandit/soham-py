@@ -1,0 +1,88 @@
+Perform the following Data Pre-processing tasks in Python using Scikit-learn: standardization, normalization, encoding, discretization, imputation of missing values on Social_Network_Ads.csv dataset.
+
+
+
+pip install pandas numpy scikit-learn
+
+
+
+
+import pandas as pd
+import numpy as np
+
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    LabelEncoder,
+    KBinsDiscretizer
+)
+
+# Load dataset
+df = pd.read_csv("Social_Network_Ads.csv")
+
+print("Dataset loaded successfully.")
+print(df.head())
+
+# Separate numeric and categorical columns
+numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
+categorical_cols = df.select_dtypes(include=["object"]).columns.tolist()
+
+# 1. Imputation of missing numeric values
+if numeric_cols:
+    num_imputer = SimpleImputer(strategy="mean")
+    df[numeric_cols] = num_imputer.fit_transform(df[numeric_cols])
+
+# Imputation of missing categorical values
+if categorical_cols:
+    cat_imputer = SimpleImputer(strategy="most_frequent")
+    df[categorical_cols] = cat_imputer.fit_transform(df[categorical_cols])
+
+print("\nMissing values after imputation:")
+print(df.isnull().sum())
+
+# 2. Encoding categorical columns
+object_cols = df.select_dtypes(include=["object"]).columns
+
+for col in object_cols:
+    encoder = LabelEncoder()
+    df[col] = encoder.fit_transform(df[col].astype(str))
+
+print("\nAfter encoding:")
+print(df.head())
+
+# Refresh numeric columns
+numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
+
+# 3. Standardization
+standard_scaler = StandardScaler()
+df[numeric_cols] = standard_scaler.fit_transform(df[numeric_cols])
+
+print("\nAfter standardization:")
+print(df.head())
+
+# 4. Normalization
+minmax_scaler = MinMaxScaler()
+df[numeric_cols] = minmax_scaler.fit_transform(df[numeric_cols])
+
+print("\nAfter normalization:")
+print(df.head())
+
+# 5. Discretization of Age
+if "Age" in df.columns:
+    discretizer = KBinsDiscretizer(
+        n_bins=3,
+        encode="ordinal",
+        strategy="uniform"
+    )
+
+    df["Age_binned"] = discretizer.fit_transform(
+        df[["Age"]]
+    ).astype(int)
+
+    print("\nAge discretization:")
+    print(df[["Age", "Age_binned"]].head())
+
+print("\nPreprocessing completed.")
+print("Final shape:", df.shape)
+print("Columns:", df.columns.tolist())

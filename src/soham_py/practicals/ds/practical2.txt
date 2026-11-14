@@ -1,0 +1,61 @@
+Write a Python program to perform hypothesis testing on federal-firearm-licensees.csv dataset. Select appropriate hypothesis testing strategies such as the student's t-test, z test, chi-square test etc.
+
+
+
+pip install pandas numpy scipy
+
+
+
+
+# Experiment 2: Hypothesis Testing
+
+# Step 1: Import required libraries
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+# Step 2: Load dataset
+licenses = pd.read_csv(
+    "federal-firearm-licensees.csv",
+    low_memory=False
+)
+
+# Step 3: Display dataset columns
+print("Columns in Dataset:")
+print(licenses.columns)
+
+# Step 4: Count licenses according to ZIP code
+zip_counts = licenses['PREMISE_ZIP_CODE'].value_counts()
+
+print("\nLicense counts by ZIP code:")
+print(zip_counts.head())
+
+# Step 5: Calculate mean
+mean_zip = zip_counts.mean()
+
+print("\nMean of license counts by ZIP code:", mean_zip)
+
+# Step 6: Define hypotheses
+# H0: Population mean = 2.75
+# H1: Population mean != 2.75
+
+pop_mean = 2.75
+
+# Step 7: Perform one-sample t-test
+t_stat, p_val = stats.ttest_1samp(
+    a=zip_counts,
+    popmean=pop_mean
+)
+
+print("\nT-statistic:", round(t_stat, 4))
+print("P-value:", round(p_val, 4))
+
+# Step 8: Check significance level
+alpha = 0.05
+
+if p_val < alpha:
+    print("\nReject Null Hypothesis (H0)")
+    print("Mean differs significantly from 2.75.")
+else:
+    print("\nFail to Reject Null Hypothesis (H0)")
+    print("No significant difference found.")

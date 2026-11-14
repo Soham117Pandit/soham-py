@@ -1,0 +1,167 @@
+Practical: Product Store Management Using XML
+1. Design an XML document to store information about products in a store (e.g., ProductID, Name, Category, Price, Quantity).
+2. Validate the XML using DTD.
+3. Validate the XML using XML Schema (XSD).
+
+
+
+
+Create XML_Practical folder
+
+
+
+products.dtd
+
+
+<!ELEMENT Store (Product+)>
+
+<!ELEMENT Product (ProductID, Name, Category, Price, Quantity)>
+
+<!ELEMENT ProductID (#PCDATA)>
+<!ELEMENT Name (#PCDATA)>
+<!ELEMENT Category (#PCDATA)>
+<!ELEMENT Price (#PCDATA)>
+<!ELEMENT Quantity (#PCDATA)>
+
+
+
+
+
+
+product.xml
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE Store SYSTEM "products.dtd">
+
+<Store>
+
+    <Product>
+        <ProductID>P101</ProductID>
+        <Name>Laptop</Name>
+        <Category>Electronics</Category>
+        <Price>55000</Price>
+        <Quantity>10</Quantity>
+    </Product>
+
+    <Product>
+        <ProductID>P102</ProductID>
+        <Name>Mobile</Name>
+        <Category>Electronics</Category>
+        <Price>25000</Price>
+        <Quantity>20</Quantity>
+    </Product>
+
+    <Product>
+        <ProductID>P103</ProductID>
+        <Name>Chair</Name>
+        <Category>Furniture</Category>
+        <Price>2500</Price>
+        <Quantity>15</Quantity>
+    </Product>
+
+
+
+
+products.xsd
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="Store">
+        <xs:complexType>
+            <xs:sequence>
+
+                <xs:element name="Product" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+
+                            <xs:element name="ProductID" type="xs:string"/>
+                            <xs:element name="Name" type="xs:string"/>
+                            <xs:element name="Category" type="xs:string"/>
+                            <xs:element name="Price" type="xs:decimal"/>
+                            <xs:element name="Quantity" type="xs:positiveInteger"/>
+
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
+
+</Store>
+
+
+
+
+
+COMMANDS 
+
+
+
+Validate XML using DTD (offline)
+
+$xml = Join-Path (Get-Location) "products.xml"
+
+$settings = New-Object System.Xml.XmlReaderSettings
+
+$settings.DtdProcessing = [System.Xml.DtdProcessing]::Parse
+
+$settings.ValidationType = [System.Xml.ValidationType]::DTD
+
+$settings.XmlResolver = New-Object System.Xml.XmlUrlResolver
+
+try {
+    $reader = [System.Xml.XmlReader]::Create($xml, $settings)
+
+    while ($reader.Read()) {}
+
+    $reader.Close()
+
+    Write-Host "DTD VALIDATION SUCCESSFUL!" -ForegroundColor Green
+}
+catch {
+    Write-Host "DTD VALIDATION FAILED!" -ForegroundColor Red
+    Write-Host $_.Exception.Message
+}
+
+
+
+
+Validate XML using XSD (offline)
+
+
+
+$xml = Join-Path (Get-Location) "products.xml"
+$xsd = Join-Path (Get-Location) "products.xsd"
+
+$settings = New-Object System.Xml.XmlReaderSettings
+
+$settings.ValidationType = [System.Xml.ValidationType]::Schema
+
+$settings.DtdProcessing = [System.Xml.DtdProcessing]::Parse
+
+$settings.XmlResolver = New-Object System.Xml.XmlUrlResolver
+
+$settings.Schemas.Add("", $xsd) | Out-Null
+
+try {
+    $reader = [System.Xml.XmlReader]::Create($xml, $settings)
+
+    while ($reader.Read()) {}
+
+    $reader.Close()
+
+    Write-Host "XSD VALIDATION SUCCESSFUL!" -ForegroundColor Green
+}
+catch {
+    Write-Host "XSD VALIDATION FAILED!" -ForegroundColor Red
+    Write-Host $_.Exception.Message
+}

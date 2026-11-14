@@ -1,0 +1,113 @@
+Perform following Data Pre-processing tasks using Python: Data reduction using variance threshold, univariate feature selection, recursive feature elimination, PCA, correlation on Auto MPG dataset.
+
+
+pip install pandas numpy matplotlib seaborn scikit-learn
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.feature_selection import (
+    VarianceThreshold,
+    SelectKBest,
+    f_regression,
+    RFE
+)
+
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+
+# Load dataset
+df = pd.read_csv("auto-mpg.csv")
+
+# Convert '?' horsepower values to missing values
+df["horsepower"] = pd.to_numeric(
+    df["horsepower"].replace("?", np.nan),
+    errors="coerce"
+)
+
+# Fill missing horsepower values with mean
+df["horsepower"] = df["horsepower"].fillna(
+    df["horsepower"].mean()
+)
+
+# Select numeric columns
+df_numeric = df.select_dtypes(include=np.number).dropna()
+
+print("Numeric columns:")
+print(df_numeric.columns.tolist())
+
+# Separate features and target
+if "mpg" not in df_numeric.columns:
+    raise ValueError("The dataset must contain an 'mpg' column.")
+
+X = df_numeric.drop(columns=["mpg"])
+y = df_numeric["mpg"]
+
+# 1. Variance Threshold
+vt = VarianceThreshold(threshold=0.5)
+vt.fit(X)
+
+print("\nColumns kept by VarianceThreshold:")
+print(X.columns[vt.get_support()].tolist())
+
+# 2. Univariate Feature Selection
+k = min(3, X.shape[1])
+
+kbest = SelectKBest(score_func=f_regression, k=k)
+kbest.fit(X, y)
+
+print("\nTop features by SelectKBest:")
+print(X.columns[kbest.get_support()].tolist())
+
+# 3. Recursive Feature Elimination (RFE)
+model = LinearRegression()
+
+rfe = RFE(
+    estimator=model,
+    n_features_to_select=k
+)
+
+rfe.fit(X, y)
+
+print("\nFeatures selected by RFE:")
+print(X.columns[rfe.support_].tolist())
+
+# 4. Principal Component Analysis (PCA)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+print("\nExplained variance ratio:")
+print(pca.explained_variance_ratio_)
+
+# PCA scatter plot
+plt.figure(figsize=(6, 4))
+plt.scatter(X_pca[:, 0], X_pca[:, 1])
+plt.title("PCA: First Two Principal Components")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.tight_layout()
+plt.show()
+
+# 5. Correlation Heatmap
+plt.figure(figsize=(9, 7))
+sns.heatmap(
+    df_numeric.corr(),
+    annot=True,
+    cmap="coolwarm",
+    fmt=".2f"
+)
+
+plt.title("Correlation Matrix")
+plt.tight_layout()
+plt.show()
+
+print("\nData reduction completed.")
+print("Dataset shape:", df.shape)

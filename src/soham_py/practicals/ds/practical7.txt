@@ -1,0 +1,81 @@
+Use BigMart Sales Data from Kaggle. Write a program to demonstrate Pandas indexing capabilities, identify null values and fill them or drop them from the dataset. Also demonstrate merging, joining and concatenating data frames using Pandas.
+
+
+
+
+
+import pandas as pd
+
+# Load dataset
+df = pd.read_csv("BigMartData.csv")
+
+print("BigMart dataset loaded successfully.")
+print(df.head())
+
+# 1. Single-column indexing
+print("\nSingle-column indexing:")
+print(df["Item_Identifier"].head())
+
+# 2. Multiple-column indexing
+print("\nMultiple-column indexing:")
+print(df[["Item_Identifier", "Item_Weight", "Item_Visibility"]].head())
+
+# 3. Row and column indexing using iloc
+print("\nUsing iloc:")
+print(df.iloc[0:5, 0:3])
+
+# 4. Identify missing values
+print("\nMissing values before treatment:")
+print(df.isnull().sum())
+
+# 5. Fill missing values
+if "Item_Weight" in df.columns:
+    df["Item_Weight"] = df["Item_Weight"].fillna(
+        df["Item_Weight"].mean()
+    )
+
+if "Outlet_Size" in df.columns and not df["Outlet_Size"].mode().empty:
+    df["Outlet_Size"] = df["Outlet_Size"].fillna(
+        df["Outlet_Size"].mode()[0]
+    )
+
+print("\nMissing values after treatment:")
+print(df.isnull().sum())
+
+# 6. Create another DataFrame
+df_outlet = pd.DataFrame({
+    "Outlet_Identifier": ["OUT010", "OUT017", "OUT027"],
+    "City": ["Mumbai", "Delhi", "Pune"],
+    "Region": ["West", "North", "West"]
+})
+
+# 7. Merge DataFrames
+merged_df = pd.merge(
+    df,
+    df_outlet,
+    on="Outlet_Identifier",
+    how="left"
+)
+
+print("\nMerged DataFrame:")
+print(merged_df[["Outlet_Identifier", "City", "Region"]].head(10))
+
+# 8. Join DataFrames
+left = df.set_index("Outlet_Identifier")
+right = df_outlet.set_index("Outlet_Identifier")
+
+joined_df = left.join(right, how="left", rsuffix="_outlet")
+
+print("\nJoined DataFrame:")
+print(joined_df[["City", "Region"]].head(10))
+
+# 9. Concatenate DataFrames
+concat_df = pd.concat(
+    [df.head(3), df.tail(3)],
+    axis=0
+)
+
+print("\nConcatenated DataFrame:")
+print(concat_df)
+
+print("\nFinal dataset shape:", df.shape)

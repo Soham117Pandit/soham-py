@@ -1,0 +1,137 @@
+Use Students-Academic-Performance-Dataset-xAPI-Edu-Data dataset of students and perform the following operations:
+1. Scan all variables for missing values and inconsistencies. If there are missing values and/or inconsistencies, use any suitable techniques to deal with them.
+2. Scan all numeric variables for outliers. If there are outliers, use any suitable techniques to deal with them.
+3. Apply data transformations on at least one of the variables. The purpose of this transformation should be one of the following reasons:
+   - To change the scale for better understanding of the variable.
+   - To convert a non-linear relation into a linear one.
+   - To decrease skewness and convert the distribution into a normal distribution.
+
+
+
+
+pip install pandas numpy matplotlib seaborn scipy
+
+
+
+
+
+# Experiment 6: Data Cleaning and Transformation
+
+# Step 1: Import libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
+
+# Step 2: Load dataset
+df = pd.read_csv("student_exam_scores.csv")
+
+print("Dataset loaded successfully!")
+print(df.head())
+
+# Step 3: Identify numerical and categorical columns
+numeric_cols = df.select_dtypes(
+    include=np.number
+).columns
+
+categorical_cols = df.select_dtypes(
+    include=["object", "category"]
+).columns
+
+# Step 4: Check missing values
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+# Step 5: Handle missing numerical values
+for col in numeric_cols:
+    df[col] = df[col].fillna(df[col].mean())
+
+# Step 6: Handle missing categorical values
+for col in categorical_cols:
+    if df[col].isnull().any() and not df[col].mode().empty:
+        df[col] = df[col].fillna(df[col].mode()[0])
+
+print("\nMissing values after handling:")
+print(df.isnull().sum())
+
+# Step 7: Check categorical inconsistencies
+for col in categorical_cols:
+    print("\nUnique values in", col)
+    print(df[col].unique())
+
+# Step 8: Detect and handle outliers using IQR
+for col in numeric_cols:
+
+    plt.figure(figsize=(5, 3))
+    sns.boxplot(y=df[col])
+    plt.title("Before outlier treatment: " + col)
+    plt.show()
+
+    q1 = df[col].quantile(0.25)
+    q3 = df[col].quantile(0.75)
+
+    iqr = q3 - q1
+
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+
+    outlier_mask = (
+        (df[col] < lower) |
+        (df[col] > upper)
+    )
+
+    print(col, "Outliers:", outlier_mask.sum())
+
+    # Replace outliers with median
+    df.loc[outlier_mask, col] = df[col].median()
+
+# Step 9: Apply logarithmic transformation
+if "hours_studied" in df.columns and (df["hours_studied"] >= 0).all():
+    transform_col = "hours_studied"
+else:
+    candidates = [
+        c for c in numeric_cols
+        if (df[c] >= 0).all()
+    ]
+
+    transform_col = candidates[0] if candidates else None
+
+if transform_col is not None:
+
+    df[transform_col + "_log"] = np.log1p(
+        df[transform_col]
+    )
+
+    print("\nLog transformation applied to:", transform_col)
+
+    # Compare before and after transformation
+    fig, axes = plt.subplots(1, 2, figsize=(9, 3))
+
+    sns.histplot(
+        df[transform_col],
+        kde=True,
+        ax=axes[0]
+    )
+    axes[0].set_title("Before Transformation")
+
+    sns.histplot(
+        df[transform_col + "_log"],
+        kde=True,
+        ax=axes[1]
+    )
+    axes[1].set_title("After Log Transformation")
+
+    plt.tight_layout()
+    plt.show()
+
+else:
+    print("No nonnegative numeric column available.")
+
+# Step 10: Display final dataset
+print("\nFinal Dataset:")
+print(df.head())
+
+print("\nFinal dataset shape:", df.shape)
+
+print("\nData cleaning and transformation completed!")

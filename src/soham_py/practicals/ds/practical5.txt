@@ -1,0 +1,107 @@
+Perform the following operations on any open-source dataset (e.g., data.csv).
+- Import all the required Python libraries.
+- Locate an open-source data from the web (e.g., Kaggle).
+- Provide a clear description of the data and its source (i.e., URL of the website).
+- Load the dataset into Pandas DataFrame.
+- Data Preprocessing: Check for missing values using Pandas isnull() and describe() functions. Provide variable descriptions, types of variables, etc. Check dimensions of the DataFrame.
+- Data Formatting and Data Normalization: Summarize the types of variables by checking data types (character, numeric, integer, factor, logical). Apply proper type conversions if required.
+- Turn categorical variables into quantitative variables in Python.
+
+
+
+pip install pandas numpy scikit-learn
+
+
+
+
+
+# Experiment 5: Data Preprocessing and Normalization
+
+# Step 1: Import required libraries
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+
+# Step 2: Load dataset
+df = pd.read_csv("data.csv")
+
+print("Dataset Loaded Successfully!")
+
+# Step 3: Check missing values
+print("\nMissing Values in Each Column:")
+print(df.isnull().sum())
+
+# Step 4: Display summary statistics
+print("\nSummary Statistics:")
+print(df.describe(include='all'))
+
+# Step 5: Display column names
+print("\nColumn Names:")
+print(df.columns.tolist())
+
+# Step 6: Display data types
+print("\nData Types:")
+print(df.dtypes)
+
+# Step 7: Display dimensions
+print("\nShape of DataFrame:")
+print(df.shape)
+
+# Step 8: Convert categorical columns into category type
+cat_cols = [
+    'gender',
+    'country',
+    'residence',
+    'prevEducation'
+]
+
+for col in cat_cols:
+    df[col] = df[col].astype('category')
+
+print("\nData Types After Conversion:")
+print(df.dtypes)
+
+# Step 9: Handle missing values
+# Fill missing Python marks with column mean
+df['Python'] = df['Python'].fillna(
+    df['Python'].mean()
+)
+
+print("\nMissing Values After Filling:")
+print(df.isnull().sum())
+
+# Step 10: Convert numerical columns
+num_cols = df.select_dtypes(
+    include=['int64', 'float64']
+).columns
+
+df[num_cols] = df[num_cols].apply(
+    pd.to_numeric,
+    errors='coerce'
+)
+
+# Step 11: Normalize numerical data
+scaler = MinMaxScaler()
+
+df[num_cols] = scaler.fit_transform(
+    df[num_cols]
+)
+
+print("\nData After Normalization:")
+print(df.head())
+
+# Step 12: Convert categorical variables into numerical values
+df_encoded = pd.get_dummies(
+    df,
+    columns=cat_cols,
+    dtype=int
+)
+
+print("\nCategorical Variables Converted:")
+print(df_encoded.head())
+
+# Step 13: Final dataset information
+print("\nFinal Dataset Shape:")
+print(df_encoded.shape)
+
+print("\nData Preprocessing Completed Successfully!")
