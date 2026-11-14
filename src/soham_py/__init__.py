@@ -24,7 +24,7 @@ from .search import search
 from .saver import save
 from .subjects import get_subjects
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __author__ = "Soham Pandit"
 __all__ = [
     "ds",
