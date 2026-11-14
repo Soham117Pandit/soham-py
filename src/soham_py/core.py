@@ -13,7 +13,6 @@ import sys
 from typing import List
 
 from .subjects import (
-    PRACTICALS_PER_SUBJECT,
     SUBJECT_INFO,
     resolve_subject,
 )

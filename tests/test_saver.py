@@ -1,7 +1,7 @@
 """Tests for soham_py.saver — saving practicals to local files."""
 
 import pathlib
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -9,61 +9,65 @@ from soham_py.saver import save
 
 
 class TestSaveBasic:
-    """Basic file saving tests."""
+    """Basic file saving tests using isolated practical environment."""
 
-    def test_save_creates_file(self, tmp_path):
+    def test_save_creates_file_with_content(self, mock_practicals, tmp_path):
+        sample_code = "print('Hello, Saver!')\n"
+        (mock_practicals["ds"] / "practical1.txt").write_text(sample_code, encoding="utf-8")
+
         dest = tmp_path / "output.txt"
         result = save("ds", 1, str(dest))
         assert dest.exists()
         assert isinstance(result, pathlib.Path)
         assert result == dest.resolve()
+        assert dest.read_text(encoding="utf-8") == sample_code
 
-    def test_save_writes_correct_content(self, tmp_path):
-        dest = tmp_path / "output.txt"
-        save("ds", 1, str(dest))
+    def test_save_empty_practical_writes_empty_file(self, mock_practicals, tmp_path):
+        (mock_practicals["wt"] / "practical1.txt").write_text("", encoding="utf-8")
+
+        dest = tmp_path / "empty_out.txt"
+        save("wt", 1, str(dest))
+        assert dest.exists()
         assert dest.read_text(encoding="utf-8") == ""
 
-    def test_save_uses_utf8(self, tmp_path):
-        dest = tmp_path / "output.txt"
-        save("wt", 1, str(dest))
-        dest.read_text(encoding="utf-8")
+    def test_save_missing_practical_writes_friendly_notice(self, mock_practicals, tmp_path):
+        dest = tmp_path / "missing_dbms.txt"
+        save("dbms", 11, str(dest))
+        assert dest.exists()
+        assert dest.read_text(encoding="utf-8") == "There is no file present for DBMS practical 11."
 
-    def test_save_preserves_content_across_all_subjects(self, tmp_path):
-        dest_ds = tmp_path / "ds.txt"
-        save("ds", 1, str(dest_ds))
-        assert dest_ds.read_text(encoding="utf-8") == ""
+    def test_save_creates_parent_directories(self, mock_practicals, tmp_path):
+        (mock_practicals["ds"] / "practical1.txt").write_text("data", encoding="utf-8")
 
-        dest_wt = tmp_path / "wt.txt"
-        save("wt", 1, str(dest_wt))
-        assert dest_wt.read_text(encoding="utf-8") == ""
-
-        dest_dbms = tmp_path / "dbms.txt"
-        save("dbms", 1, str(dest_dbms))
-        assert dest_dbms.read_text(encoding="utf-8") == "practical 1"
-
-    def test_save_creates_parent_directories(self, tmp_path):
         dest = tmp_path / "subdir" / "nested" / "deep" / "output.txt"
         save("ds", 1, str(dest))
         assert dest.exists()
+        assert dest.read_text(encoding="utf-8") == "data"
 
-    def test_save_with_alias(self, tmp_path):
+    def test_save_with_alias(self, mock_practicals, tmp_path):
+        (mock_practicals["ds"] / "practical1.txt").write_text("aliased", encoding="utf-8")
+
         dest = tmp_path / "output.txt"
         save("data_science", 1, str(dest))
         assert dest.exists()
+        assert dest.read_text(encoding="utf-8") == "aliased"
 
-    def test_save_accepts_pathlib_path(self, tmp_path):
+    def test_save_accepts_pathlib_path(self, mock_practicals, tmp_path):
+        (mock_practicals["ds"] / "practical1.txt").write_text("from_path", encoding="utf-8")
+
         dest = tmp_path / "from_pathlib.txt"
         save("ds", 1, dest)
         assert dest.exists()
+        assert dest.read_text(encoding="utf-8") == "from_path"
 
-    def test_save_missing_practical_writes_notice(self, tmp_path):
-        dest = tmp_path / "dbms11.txt"
-        save("dbms", 11, str(dest))
-        assert dest.read_text(encoding="utf-8") == "There is no file present for DBMS practical 11."
+    def test_save_practical_number_greater_than_10(self, mock_practicals, tmp_path):
+        sql = "SELECT * FROM logs;"
+        (mock_practicals["dbms"] / "practical25.txt").write_text(sql, encoding="utf-8")
 
-        dest_ds = tmp_path / "ds20.txt"
-        save("ds", 20, str(dest_ds))
-        assert dest_ds.read_text(encoding="utf-8") == "There is no file present for DS practical 20."
+        dest = tmp_path / "practical25.sql"
+        save("dbms", 25, str(dest))
+        assert dest.exists()
+        assert dest.read_text(encoding="utf-8") == sql
 
 
 # ── Multiline and Unicode Content Tests ─────────────────────────────

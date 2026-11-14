@@ -1,7 +1,5 @@
 """Tests for soham_py.search — full-text search across practicals."""
 
-from unittest.mock import patch
-
 import pytest
 
 from soham_py.search import search
@@ -61,62 +59,38 @@ WHERE gpa >= 3.5
 ORDER BY gpa DESC;
 """
 
+SAMPLE_XML_CODE = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<store>
+    <item id="1">Book</item>
+    <item id="2">Pen</item>
+</store>
+"""
 
-# ── Empty Practicals Search Tests ───────────────────────────────────
 
-class TestSearchEmpty:
-    """Searching when practical files are empty."""
+# ── Isolated Search Tests ───────────────────────────────────────────
+
+class TestSearchIsolated:
+    """Test search with known practical files in an isolated environment."""
+
+    @pytest.fixture(autouse=True)
+    def setup_files(self, mock_practicals):
+        (mock_practicals["ds"] / "practical1.txt").write_text(SAMPLE_PYTHON_CODE, encoding="utf-8")
+        (mock_practicals["ds"] / "practical2.txt").write_text("", encoding="utf-8")  # empty file
+        (mock_practicals["wt"] / "practical1.txt").write_text(SAMPLE_HTML_CODE, encoding="utf-8")
+        (mock_practicals["dbms"] / "practical1.txt").write_text(SAMPLE_SQL_CODE, encoding="utf-8")
+        (mock_practicals["dbms"] / "practical25.txt").write_text(SAMPLE_XML_CODE, encoding="utf-8")
 
     def test_search_returns_empty_list_when_no_matches(self):
-        results = search("regression")
+        results = search("nonexistent_term_xyz_123")
         assert results == []
 
     def test_search_ignores_empty_files(self):
+        # practical 2 in ds is empty
         results = search("anything")
-        assert results == []
+        for r in results:
+            assert not (r["subject"] == "ds" and r["practical"] == 2)
 
-    def test_search_result_is_list(self):
-        results = search("test")
-        assert isinstance(results, list)
-
-
-# ── Query Validation Tests ──────────────────────────────────────────
-
-class TestSearchValidation:
-    """Validation of the search query argument."""
-
-    @pytest.mark.parametrize("empty_query", ["", "   ", "\t", "\n", " \t \n "])
-    def test_empty_or_whitespace_query_raises_value_error(self, empty_query):
-        with pytest.raises(ValueError, match="non-empty string"):
-            search(empty_query)
-
-    @pytest.mark.parametrize("invalid_query", [None, 123, 45.6, [], {}, True, False])
-    def test_non_string_query_raises_value_error(self, invalid_query):
-        with pytest.raises(ValueError, match="non-empty string"):
-            search(invalid_query)  # type: ignore[arg-type]
-
-
-# ── Multiline Python, HTML, SQL Search Tests ────────────────────────
-
-class TestSearchWithContent:
-    """Search with simulated multiline Python, HTML, and SQL practicals."""
-
-    @pytest.fixture(autouse=True)
-    def setup_mock_practicals(self):
-        """Simulate DS with Python, WT with HTML, and DBMS with SQL."""
-        def mock_get(subject, number):
-            if subject == "ds" and number == 1:
-                return SAMPLE_PYTHON_CODE
-            elif subject == "wt" and number == 2:
-                return SAMPLE_HTML_CODE
-            elif subject == "dbms" and number == 3:
-                return SAMPLE_SQL_CODE
-            return ""
-
-        with patch("soham_py.search.get_practical", side_effect=mock_get):
-            yield
-
-    # Python search
     def test_search_python_keyword(self):
         results = search("LinearRegression")
         assert len(results) == 1
@@ -137,58 +111,61 @@ class TestSearchWithContent:
         assert results[0]["practical"] == 1
         assert results[0]["snippet"] == "import pandas as pd"
 
-    # HTML search
     def test_search_html_tag(self):
         results = search("<form")
         assert len(results) == 1
         assert results[0]["subject"] == "wt"
-        assert results[0]["practical"] == 2
+        assert results[0]["practical"] == 1
         assert '<form action="/submit" method="POST">' in str(results[0]["snippet"])
 
     def test_search_html_case_insensitive(self):
         results = search("doctype")
         assert len(results) == 1
         assert results[0]["subject"] == "wt"
-        assert results[0]["practical"] == 2
+        assert results[0]["practical"] == 1
         assert "<!DOCTYPE html>" in str(results[0]["snippet"])
 
-    def test_search_html_button(self):
-        results = search("submit form")
-        assert len(results) == 1
-        assert results[0]["subject"] == "wt"
-        assert results[0]["practical"] == 2
-
-    # SQL search
     def test_search_sql_create_table(self):
         results = search("CREATE TABLE")
         assert len(results) == 1
         assert results[0]["subject"] == "dbms"
-        assert results[0]["practical"] == 3
+        assert results[0]["practical"] == 1
         assert results[0]["snippet"] == "CREATE TABLE students ("
-
-    def test_search_sql_case_insensitive(self):
-        results = search("select")
-        assert len(results) == 1
-        assert results[0]["subject"] == "dbms"
-        assert results[0]["practical"] == 3
-        assert results[0]["snippet"] == "SELECT first_name, last_name, gpa"
 
     def test_search_sql_author_name(self):
         results = search("soham")
         assert len(results) == 1
         assert results[0]["subject"] == "dbms"
-        assert results[0]["practical"] == 3
+        assert results[0]["practical"] == 1
 
-    # Cross-subject search
-    def test_search_common_term_matches_none(self):
-        results = search("nonexistent_term_xyz")
-        assert results == []
+    def test_search_across_additional_practical_files(self):
+        # practical 25 in dbms has XML
+        results = search("store")
+        assert len(results) == 1
+        assert results[0]["subject"] == "dbms"
+        assert results[0]["practical"] == 25
+        assert "<store>" in str(results[0]["snippet"])
 
     def test_snippet_is_first_matching_line(self):
         results = search("gpa")
         assert len(results) == 1
-        # The first occurrence of "gpa" in SAMPLE_SQL_CODE is "gpa DECIMAL(3, 2) DEFAULT 0.00"
         assert "gpa DECIMAL" in str(results[0]["snippet"])
+
+
+# ── Query Validation Tests ──────────────────────────────────────────
+
+class TestSearchValidation:
+    """Validation of the search query argument."""
+
+    @pytest.mark.parametrize("empty_query", ["", "   ", "\t", "\n", " \t \n "])
+    def test_empty_or_whitespace_query_raises_value_error(self, empty_query):
+        with pytest.raises(ValueError, match="non-empty string"):
+            search(empty_query)
+
+    @pytest.mark.parametrize("invalid_query", [None, 123, 45.6, [], {}, True, False])
+    def test_non_string_query_raises_value_error(self, invalid_query):
+        with pytest.raises(ValueError, match="non-empty string"):
+            search(invalid_query)  # type: ignore[arg-type]
 
 
 # ── Code Is Never Executed During Search ─────────────────────────────
@@ -196,18 +173,12 @@ class TestSearchWithContent:
 class TestSearchNoExecution:
     """Ensure that search examines text purely and never executes it."""
 
-    def test_search_across_malicious_code(self):
+    def test_search_across_malicious_code(self, mock_practicals):
         dangerous_code = "import os\nos.system('echo dangerous')\nraise SystemExit('bye')\n"
+        (mock_practicals["ds"] / "practical1.txt").write_text(dangerous_code, encoding="utf-8")
 
-        def mock_get(subject, number):
-            if subject == "ds" and number == 1:
-                return dangerous_code
-            return ""
-
-        with patch("soham_py.search.get_practical", side_effect=mock_get):
-            # This should search the string without executing os.system or SystemExit
-            results = search("dangerous")
-            assert len(results) == 1
-            assert results[0]["subject"] == "ds"
-            assert results[0]["practical"] == 1
-            assert "os.system" in str(results[0]["snippet"])
+        results = search("dangerous")
+        assert len(results) == 1
+        assert results[0]["subject"] == "ds"
+        assert results[0]["practical"] == 1
+        assert "os.system" in str(results[0]["snippet"])

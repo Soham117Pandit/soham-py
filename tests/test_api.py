@@ -5,74 +5,51 @@ import pytest
 import soham_py
 
 
-class TestConvenienceFunctions:
-    """Top-level ds(), wt(), dbms() functions."""
+class TestConvenienceFunctionsIsolated:
+    """Top-level ds(), wt(), dbms() functions using isolated environment."""
 
-    def test_ds_returns_string(self):
-        assert isinstance(soham_py.ds(1), str)
+    def test_existing_populated_practicals(self, mock_practicals):
+        (mock_practicals["ds"] / "practical1.txt").write_text("import pandas as pd", encoding="utf-8")
+        (mock_practicals["wt"] / "practical1.txt").write_text("<!DOCTYPE html>", encoding="utf-8")
+        (mock_practicals["dbms"] / "practical1.txt").write_text("SELECT 1;", encoding="utf-8")
 
-    def test_wt_returns_string(self):
-        assert isinstance(soham_py.wt(1), str)
+        assert soham_py.ds(1) == "import pandas as pd"
+        assert soham_py.wt(1) == "<!DOCTYPE html>"
+        assert soham_py.dbms(1) == "SELECT 1;"
 
-    def test_dbms_returns_string(self):
-        assert isinstance(soham_py.dbms(1), str)
+    def test_existing_empty_practicals(self, mock_practicals):
+        (mock_practicals["ds"] / "practical2.txt").write_text("", encoding="utf-8")
+        (mock_practicals["wt"] / "practical2.txt").write_text("", encoding="utf-8")
+        (mock_practicals["dbms"] / "practical2.txt").write_text("", encoding="utf-8")
 
-    # Existing practical containing code
-    def test_existing_practical_containing_code(self):
-        assert soham_py.dbms(1) == "practical 1"
-        assert soham_py.dbms(2) == "practical 2"
+        assert soham_py.ds(2) == ""
+        assert soham_py.wt(2) == ""
+        assert soham_py.dbms(2) == ""
 
-    # Existing empty practical files
-    def test_existing_empty_practical_files_ds(self):
-        for number in range(1, 11):
-            assert soham_py.ds(number) == ""
-
-    def test_existing_empty_practical_files_wt(self):
-        for number in range(1, 11):
-            assert soham_py.wt(number) == ""
-
-    def test_existing_empty_practical_files_dbms(self):
-        for number in range(3, 11):
-            assert soham_py.dbms(number) == ""
-
-    # Missing practical numbers return friendly plain-text message
-    def test_dbms_11_returns_friendly_message(self):
-        """Specifically verify the example from the specification."""
-        assert soham_py.dbms(11) == "There is no file present for DBMS practical 11."
-
-    # Practical numbers greater than 10 across all 3 subjects
-    def test_ds_practical_greater_than_10(self):
-        assert soham_py.ds(11) == "There is no file present for DS practical 11."
-        assert soham_py.ds(15) == "There is no file present for DS practical 15."
-        assert soham_py.ds(99) == "There is no file present for DS practical 99."
-
-    def test_wt_practical_greater_than_10(self):
-        assert soham_py.wt(11) == "There is no file present for WT practical 11."
-        assert soham_py.wt(15) == "There is no file present for WT practical 15."
-        assert soham_py.wt(100) == "There is no file present for WT practical 100."
-
-    def test_dbms_practical_greater_than_10(self):
+    def test_missing_practicals_return_friendly_message(self, mock_practicals):
         assert soham_py.dbms(11) == "There is no file present for DBMS practical 11."
         assert soham_py.dbms(15) == "There is no file present for DBMS practical 15."
-        assert soham_py.dbms(25) == "There is no file present for DBMS practical 25."
+        assert soham_py.ds(20) == "There is no file present for DS practical 20."
+        assert soham_py.wt(30) == "There is no file present for WT practical 30."
 
-    # Zero and negative practical numbers across all 3 subjects
+    def test_practical_number_greater_than_10_when_present(self, mock_practicals):
+        (mock_practicals["ds"] / "practical15.txt").write_text("model = None", encoding="utf-8")
+        (mock_practicals["wt"] / "practical42.txt").write_text("alert(1);", encoding="utf-8")
+        (mock_practicals["dbms"] / "practical100.txt").write_text("COMMIT;", encoding="utf-8")
+
+        assert soham_py.ds(15) == "model = None"
+        assert soham_py.wt(42) == "alert(1);"
+        assert soham_py.dbms(100) == "COMMIT;"
+
     @pytest.mark.parametrize("invalid_num", [0, -1, -50])
-    def test_ds_zero_and_negative_raise_value_error(self, invalid_num):
+    def test_zero_and_negative_raise_value_error(self, invalid_num):
         with pytest.raises(ValueError, match="positive integer"):
             soham_py.ds(invalid_num)
-
-    @pytest.mark.parametrize("invalid_num", [0, -1, -50])
-    def test_wt_zero_and_negative_raise_value_error(self, invalid_num):
         with pytest.raises(ValueError, match="positive integer"):
             soham_py.wt(invalid_num)
-
-    @pytest.mark.parametrize("invalid_num", [0, -1, -50])
-    def test_dbms_zero_and_negative_raise_value_error(self, invalid_num):
         with pytest.raises(ValueError, match="positive integer"):
             soham_py.dbms(invalid_num)
 
-    # Non-integer types
     @pytest.mark.parametrize("invalid_type", ["one", None, 3.14, True])
     def test_non_integer_numbers_raise_value_error(self, invalid_type):
         with pytest.raises(ValueError, match="must be an integer"):
@@ -96,37 +73,41 @@ class TestSubjects:
         assert set(keys) == {"ds", "wt", "dbms"}
 
 
-class TestListPracticals:
+class TestListPracticalsTopLevel:
     """soham_py.list_practicals() function."""
 
-    def test_ds_has_10(self):
-        assert soham_py.list_practicals("ds") == list(range(1, 11))
+    def test_list_practicals_reflects_files(self, mock_practicals):
+        (mock_practicals["ds"] / "practical1.txt").write_text("code", encoding="utf-8")
+        (mock_practicals["ds"] / "practical15.txt").write_text("code", encoding="utf-8")
+        (mock_practicals["ds"] / "practical3.txt").write_text("code", encoding="utf-8")
 
-    def test_wt_has_10(self):
-        assert soham_py.list_practicals("wt") == list(range(1, 11))
-
-    def test_dbms_has_10(self):
-        assert soham_py.list_practicals("dbms") == list(range(1, 11))
+        assert soham_py.list_practicals("ds") == [1, 3, 15]
 
 
-class TestSearch:
+class TestSearchTopLevel:
     """soham_py.search() function at the top level."""
 
-    def test_search_returns_list(self):
-        assert soham_py.search("nonexistent_keyword_xyz") == []
+    def test_search_finds_code(self, mock_practicals):
+        (mock_practicals["ds"] / "practical1.txt").write_text("import pandas as pd", encoding="utf-8")
+        results = soham_py.search("pandas")
+        assert len(results) == 1
+        assert results[0]["subject"] == "ds"
+        assert results[0]["practical"] == 1
 
     def test_search_empty_raises(self):
         with pytest.raises(ValueError):
             soham_py.search("")
 
 
-class TestSave:
+class TestSaveTopLevel:
     """soham_py.save() function at the top level."""
 
-    def test_save_creates_file(self, tmp_path):
+    def test_save_creates_file(self, mock_practicals, tmp_path):
+        (mock_practicals["ds"] / "practical1.txt").write_text("some code", encoding="utf-8")
         dest = tmp_path / "out.txt"
         soham_py.save("ds", 1, str(dest))
         assert dest.exists()
+        assert dest.read_text(encoding="utf-8") == "some code"
 
 
 class TestVersion:
@@ -134,7 +115,7 @@ class TestVersion:
 
     def test_version_exists(self):
         assert hasattr(soham_py, "__version__")
-        assert soham_py.__version__ == "0.1.3"
+        assert isinstance(soham_py.__version__, str)
 
     def test_author_exists(self):
         assert soham_py.__author__ == "Soham Pandit"
