@@ -1,0 +1,72 @@
+Q 11. Design and develop MongoDB queries to perform CRUD operations on a Students collection.
+The collection should store student details such as Student ID, Name, Course, Age, and Marks.
+Perform the following operations:
+1. Insert one student record using insert One().
+2. Find students who scored more than 75 marks.
+3. Find students belonging to the "Computer Engineering" course AND having marks greater than 70.
+4. Find students belonging to either "Computer Engineering" OR "IT".
+5. Update a student's marks. Update Multiple Students:
+
+
+
+
+// 1. Create Database
+use CollegeDB
+
+// 2. Create Collection
+db.createCollection("Students")
+
+// 3. Insert One Student
+db.Students.insertOne({
+    StudentID: 101,
+    Name: "Soham",
+    Course: "Computer Engineering",
+    Age: 20,
+    Marks: 85
+})
+
+// 4. Insert Multiple Students
+db.Students.insertMany([
+    {StudentID: 102, Name: "Rahul", Course: "IT", Age: 21, Marks: 72},
+    {StudentID: 103, Name: "Priya", Course: "Computer Engineering", Age: 20, Marks: 90},
+    {StudentID: 104, Name: "Amit", Course: "Mechanical", Age: 22, Marks: 65},
+    {StudentID: 105, Name: "Neha", Course: "IT", Age: 20, Marks: 78}
+])
+
+// 5. Display All Students
+db.Students.find()
+
+// 6. Find Students With Marks Greater Than 75
+db.Students.find({Marks: {$gt: 75}})
+
+// 7. Computer Engineering AND Marks Greater Than 70
+db.Students.find({
+    Course: "Computer Engineering",
+    Marks: {$gt: 70}
+})
+
+// 8. Computer Engineering OR IT
+db.Students.find({
+    $or: [
+        {Course: "Computer Engineering"},
+        {Course: "IT"}
+    ]
+})
+
+// 9. Update One Student's Marks
+db.Students.updateOne(
+    {StudentID: 101},
+    {$set: {Marks: 95}}
+)
+
+// 10. Update Multiple Students
+db.Students.updateMany(
+    {Marks: {$lt: 80}},
+    {$set: {Marks: 80}}
+)
+
+// 11. Delete One Student
+db.Students.deleteOne({StudentID: 104})
+
+// 12. Display Final Records
+db.Students.find()

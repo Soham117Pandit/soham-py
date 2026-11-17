@@ -1,0 +1,82 @@
+Q.5 Create the following tables and perform the following tasks using LEFT Join:
+Books(BookID, BookName, AuthorID, Price)
+Authors(AuthorID, AuthorName)
+BookBorrowing(BookID, MemberID)
+Members(MemberID, MemberName)
+Q1. Display book names along with their author names.
+Q2. Display book name and price along with author name.
+Q3. Display only books written by the "R. K. Sharma" author. Q4. Display book names along with the members who have borrowed them. (Using Three Tables)
+
+
+
+
+
+// CREATE DATABASE
+CREATE DATABASE LibraryDB;
+USE LibraryDB;
+
+// CREATE TABLES
+CREATE TABLE Authors (
+    AuthorID INT PRIMARY KEY,
+    AuthorName VARCHAR(50)
+);
+
+CREATE TABLE Books (
+    BookID INT PRIMARY KEY,
+    BookName VARCHAR(100),
+    AuthorID INT,
+    Price DECIMAL(10,2)
+);
+
+CREATE TABLE Members (
+    MemberID INT PRIMARY KEY,
+    MemberName VARCHAR(50)
+);
+
+CREATE TABLE BookBorrowing (
+    BookID INT,
+    MemberID INT
+);
+
+// INSERT RECORDS
+INSERT INTO Authors VALUES
+(1,'R. K. Sharma'),(2,'Chetan Bhagat'),(3,'Ruskin Bond');
+
+INSERT INTO Books VALUES
+(101,'Database System',1,500),
+(102,'Five Point Someone',2,350),
+(103,'Computer Basics',1,400),
+(104,'The Blue Umbrella',3,250);
+
+INSERT INTO Members VALUES
+(201,'Soham'),(202,'Rahul'),(203,'Priya');
+
+INSERT INTO BookBorrowing VALUES
+(101,201),(102,202),(103,203);
+
+// Q1. Book names with author names
+SELECT B.BookName, A.AuthorName
+FROM Books B
+LEFT JOIN Authors A
+ON B.AuthorID = A.AuthorID;
+
+// Q2. Book name, price and author name
+SELECT B.BookName, B.Price, A.AuthorName
+FROM Books B
+LEFT JOIN Authors A
+ON B.AuthorID = A.AuthorID;
+
+// Q3. Books written by R. K. Sharma
+SELECT B.BookName, A.AuthorName
+FROM Books B
+LEFT JOIN Authors A
+ON B.AuthorID = A.AuthorID
+WHERE A.AuthorName = 'R. K. Sharma';
+
+// Q4. Book names with members who borrowed them
+SELECT B.BookName, M.MemberName
+FROM Books B
+LEFT JOIN BookBorrowing BB
+ON B.BookID = BB.BookID
+LEFT JOIN Members M
+ON BB.MemberID = M.MemberID;

@@ -1,0 +1,75 @@
+Q.09 Consider a customer database with the following tables:
+ Customers (columns: CustomerID, FirstName, LastName, TotalPurchases,
+ LoyaltyPoints)
+Orders (columns: OrderID, CustomerID, OrderDate, OrderAmount)
+Create a PL/SQL trigger that automatically executes when a new order is added to the Orders table. The trigger should do the following:Calculate the loyalty points earned for the order based on the order amount (e.g., 1 point for every $10 spent).Update the LoyaltyPoints field in the Customers table with the calculated points for the customer.
+
+
+
+
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    TotalPurchases DECIMAL(10,2),
+    LoyaltyPoints INT DEFAULT 0
+);
+
+
+
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY,
+    CustomerID INT,
+    OrderDate DATE,
+    OrderAmount DECIMAL(10,2),
+    FOREIGN KEY (CustomerID)
+    REFERENCES Customers(CustomerID)
+);
+
+
+
+
+INSERT INTO Customers VALUES
+(101, 'Rahul', 'Patil', 5000, 50),
+(102, 'Amit', 'Sharma', 3000, 20),
+(103, 'Sneha', 'Pawar', 7000, 100);
+
+
+
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_loyalty_points
+AFTER INSERT ON Orders
+FOR EACH ROW
+BEGIN
+
+    UPDATE Customers
+    SET LoyaltyPoints = LoyaltyPoints + FLOOR(NEW.OrderAmount / 10)
+    WHERE CustomerID = NEW.CustomerID;
+
+END //
+
+DELIMITER ;
+
+
+
+
+
+
+INSERT INTO Orders VALUES
+(1, 101, CURDATE(), 250),
+(2, 102, CURDATE(), 150),
+(3, 103, CURDATE(), 500);
+
+
+
+
+SELECT * FROM Orders;
+
+
+
+SELECT * FROM Customers;
+
+

@@ -1,0 +1,52 @@
+Q12 MongoDB – Aggregation
+Design and develop MongoDB queries to perform aggregation operations on a Students collection. The collection should contain student details such as StudentID, Name, Course, and Marks. Perform operations to find the total number of students, highest marks, lowest marks, and average marks. Also, group students based on their course.
+a. Find Total Number of Students:-
+b. Find Lowest Marks:
+c. Find Average Marks:
+
+
+
+
+
+// 1. Select Database
+use CollegeDB
+
+// 2. Create Collection (if not already created)
+db.createCollection("Students")
+
+// 3. Insert Student Records
+db.Students.insertMany([
+    {StudentID: 101, Name: "Soham", Course: "Computer Engineering", Marks: 85},
+    {StudentID: 102, Name: "Rahul", Course: "IT", Marks: 72},
+    {StudentID: 103, Name: "Priya", Course: "Computer Engineering", Marks: 90},
+    {StudentID: 104, Name: "Amit", Course: "Mechanical", Marks: 65},
+    {StudentID: 105, Name: "Neha", Course: "IT", Marks: 78}
+])
+
+// A. Find Total Number of Students
+db.Students.aggregate([
+    {$count: "TotalStudents"}
+])
+
+// B. Find Highest Marks
+db.Students.aggregate([
+    {$group: {_id: null, HighestMarks: {$max: "$Marks"}}}
+])
+
+// C. Find Lowest Marks
+db.Students.aggregate([
+    {$group: {_id: null, LowestMarks: {$min: "$Marks"}}}
+])
+
+// D. Find Average Marks
+db.Students.aggregate([
+    {$group: {_id: null, AverageMarks: {$avg: "$Marks"}}}
+])
+
+// E. Group Students Based on Course
+db.Students.aggregate([
+    {$group: {_id: "$Course", TotalStudents: {$sum: 1}}}
+])
+
+// F. Display All Students
+db.Students.find()

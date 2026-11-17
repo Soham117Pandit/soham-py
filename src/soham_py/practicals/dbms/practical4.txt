@@ -1,0 +1,92 @@
+Q.4 . Create following tables and perform the Following Tasks using LEFT OUTER JOINEmployees(EmployeeID, FirstName, LastName, DepartmentID, Salary)
+ Departments(DepartmentID,
+DepartmentName)
+EmployeeProjects(EmployeeID, ProjectID)
+ Projects(ProjectID, ProjectName)
+Q1. Display employee names along with their department names.
+Q2. Display employee name and salary along with department name.
+Q3. Display only employees who belong to the computer department.
+Q4. Display employee names along with the projects they are working on
+
+
+
+
+
+
+// 1. Create Database
+CREATE DATABASE CompanyDB;
+USE CompanyDB;
+
+// 2. Create Tables
+CREATE TABLE Employees (
+    EmployeeID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    DepartmentID INT,
+    Salary DECIMAL(10,2)
+);
+
+CREATE TABLE Departments (
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName VARCHAR(50)
+);
+
+CREATE TABLE EmployeeProjects (
+    EmployeeID INT,
+    ProjectID INT
+);
+
+CREATE TABLE Projects (
+    ProjectID INT PRIMARY KEY,
+    ProjectName VARCHAR(100)
+);
+
+// 3. Insert Records
+INSERT INTO Departments VALUES
+(1, 'Computer'),
+(2, 'Mechanical'),
+(3, 'Civil');
+
+INSERT INTO Employees VALUES
+(101, 'Soham', 'Pandit', 1, 30000),
+(102, 'Rahul', 'Patil', 2, 25000),
+(103, 'Priya', 'Sharma', 1, 35000),
+(104, 'Amit', 'Kumar', 3, 28000);
+
+INSERT INTO Projects VALUES
+(201, 'AI System'),
+(202, 'Web Development'),
+(203, 'Database Management');
+
+INSERT INTO EmployeeProjects VALUES
+(101, 201),
+(101, 202),
+(102, 203),
+(103, 201);
+
+// 4. Q1: Employee names with department names
+SELECT E.FirstName, E.LastName, D.DepartmentName
+FROM Employees E
+LEFT OUTER JOIN Departments D
+ON E.DepartmentID = D.DepartmentID;
+
+// 5. Q2: Employee name, salary and department name
+SELECT E.FirstName, E.LastName, E.Salary, D.DepartmentName
+FROM Employees E
+LEFT OUTER JOIN Departments D
+ON E.DepartmentID = D.DepartmentID;
+
+// 6. Q3: Employees belonging to Computer department
+SELECT E.FirstName, E.LastName, D.DepartmentName
+FROM Employees E
+LEFT OUTER JOIN Departments D
+ON E.DepartmentID = D.DepartmentID
+WHERE D.DepartmentName = 'Computer';
+
+// 7. Q4: Employee names with project names (Three Tables)
+SELECT E.FirstName, E.LastName, P.ProjectName
+FROM Employees E
+LEFT OUTER JOIN EmployeeProjects EP
+ON E.EmployeeID = EP.EmployeeID
+LEFT OUTER JOIN Projects P
+ON EP.ProjectID = P.ProjectID;

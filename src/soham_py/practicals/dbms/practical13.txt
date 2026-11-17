@@ -1,0 +1,40 @@
+Q13 . MongoDB – Indexing:
+Design and develop MongoDB queries to demonstrate
+1. Indexing on a Students collection. Create an index on the Marks or Name field, display the created index,
+ 2. use the indexed field to search student records, and
+ 3. Demonstrate how to delete an index.
+
+
+
+// 1. Select Database
+use CollegeDB
+
+// 2. Create Students Collection (if not already created)
+db.createCollection("Students")
+
+// 3. Insert Student Records (if collection is empty)
+db.Students.insertMany([
+    {StudentID: 101, Name: "Soham", Course: "Computer Engineering", Marks: 85},
+    {StudentID: 102, Name: "Rahul", Course: "IT", Marks: 72},
+    {StudentID: 103, Name: "Priya", Course: "Computer Engineering", Marks: 90},
+    {StudentID: 104, Name: "Amit", Course: "Mechanical", Marks: 65},
+    {StudentID: 105, Name: "Neha", Course: "IT", Marks: 78}
+])
+
+// 4. Create Index on Marks Field
+db.Students.createIndex({Marks: 1})
+
+// 5. Display All Created Indexes
+db.Students.getIndexes()
+
+// 6. Search Students Using Indexed Marks Field
+db.Students.find({Marks: {$gt: 75}})
+
+// 7. Display Query Execution Plan (Index Usage)
+db.Students.find({Marks: {$gt: 75}}).explain("executionStats")
+
+// 8. Delete Index on Marks Field
+db.Students.dropIndex("Marks_1")
+
+// 9. Display Indexes After Deletion
+db.Students.getIndexes()

@@ -1,0 +1,42 @@
+Q.14 MongoDB - Map reduces operations:
+Implement the MapReduce operation in MongoDB to find the total marks obtained by students in each course.
+We will use a simple Students collection containing StudentID, Name, Course, and Marks
+
+
+
+
+
+// 1. Select Database
+use CollegeDB
+
+// 2. Create Collection (if not already created)
+db.createCollection("Students")
+
+// 3. Insert Student Records (if collection is empty)
+db.Students.insertMany([
+    {StudentID: 101, Name: "Soham", Course: "Computer Engineering", Marks: 85},
+    {StudentID: 102, Name: "Rahul", Course: "IT", Marks: 72},
+    {StudentID: 103, Name: "Priya", Course: "Computer Engineering", Marks: 90},
+    {StudentID: 104, Name: "Amit", Course: "Mechanical", Marks: 65},
+    {StudentID: 105, Name: "Neha", Course: "IT", Marks: 78}
+])
+
+// 4. Map Function
+var mapFunction = function() {
+    emit(this.Course, this.Marks);
+};
+
+// 5. Reduce Function
+var reduceFunction = function(course, marks) {
+    return Array.sum(marks);
+};
+
+// 6. Perform MapReduce
+db.Students.mapReduce(
+    mapFunction,
+    reduceFunction,
+    {out: "CourseTotalMarks"}
+)
+
+// 7. Display Result
+db.CourseTotalMarks.find()

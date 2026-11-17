@@ -1,1 +1,85 @@
-practical 2
+Q.2 Create the following tables and perform the following tasks using Inner Join:
+Doctors(DoctorID, DoctorName, Specialization, DepartmentID, Salary)
+Departments(DepartmentID, DepartmentName)
+DoctorPatients(DoctorID, PatientID)
+Patients(PatientID, PatientName)
+Q1. Display doctor names along with their department names.
+Q2. Display doctor name and salary along with department name.
+Q3. Display only doctors who belong to the Cardiology department.
+Q4. Display doctor names along with the patients they are treating. (Using Three Tables)
+
+
+
+
+
+
+// CREATE DATABASE
+CREATE DATABASE HospitalDB;
+USE HospitalDB;
+
+// CREATE TABLES
+CREATE TABLE Departments (
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName VARCHAR(50)
+);
+
+CREATE TABLE Doctors (
+    DoctorID INT PRIMARY KEY,
+    DoctorName VARCHAR(50),
+    Specialization VARCHAR(50),
+    DepartmentID INT,
+    Salary DECIMAL(10,2)
+);
+
+CREATE TABLE Patients (
+    PatientID INT PRIMARY KEY,
+    PatientName VARCHAR(50)
+);
+
+CREATE TABLE DoctorPatients (
+    DoctorID INT,
+    PatientID INT
+);
+
+// INSERT RECORDS
+INSERT INTO Departments VALUES
+(1,'Cardiology'),(2,'Neurology'),(3,'Orthopedic');
+
+INSERT INTO Doctors VALUES
+(101,'Dr. Amit','Heart Specialist',1,80000),
+(102,'Dr. Rahul','Brain Specialist',2,75000),
+(103,'Dr. Priya','Heart Specialist',1,90000),
+(104,'Dr. Neha','Bone Specialist',3,70000);
+
+INSERT INTO Patients VALUES
+(201,'Soham'),(202,'Rahul'),(203,'Priya');
+
+INSERT INTO DoctorPatients VALUES
+(101,201),(101,202),(102,203);
+
+// Q1. Doctor names with department names
+SELECT D.DoctorName, DP.DepartmentName
+FROM Doctors D
+INNER JOIN Departments DP
+ON D.DepartmentID = DP.DepartmentID;
+
+// Q2. Doctor name, salary and department
+SELECT D.DoctorName, D.Salary, DP.DepartmentName
+FROM Doctors D
+INNER JOIN Departments DP
+ON D.DepartmentID = DP.DepartmentID;
+
+// Q3. Doctors belonging to Cardiology
+SELECT D.DoctorName, DP.DepartmentName
+FROM Doctors D
+INNER JOIN Departments DP
+ON D.DepartmentID = DP.DepartmentID
+WHERE DP.DepartmentName = 'Cardiology';
+
+// Q4. Doctor names with patients (Three Tables)
+SELECT D.DoctorName, P.PatientName
+FROM Doctors D
+INNER JOIN DoctorPatients DP
+ON D.DoctorID = DP.DoctorID
+INNER JOIN Patients P
+ON DP.PatientID = P.PatientID;

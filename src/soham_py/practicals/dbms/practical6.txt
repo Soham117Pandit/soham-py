@@ -1,0 +1,83 @@
+Q.6 Create the following tables and perform the following tasks using LEFT Outer Join:Customers(CustomerID, CustomerName, City, CategoryID)
+Categories(CategoryID, CategoryName)
+CustomerOrders(CustomerID, OrderID)
+Orders(OrderID, OrderDate)
+Q1. Display customer names along with their category names.
+Q2. Display customer name and city along with category name.
+Q3. Display only customers who belong to the Premium category. Q4. Display customer names along with their order dates. (Using Three Tables)
+
+
+
+
+
+// CREATE DATABASE
+CREATE DATABASE CustomerDB;
+USE CustomerDB;
+
+// CREATE TABLES
+CREATE TABLE Categories (
+    CategoryID INT PRIMARY KEY,
+    CategoryName VARCHAR(50)
+);
+
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY,
+    CustomerName VARCHAR(50),
+    City VARCHAR(50),
+    CategoryID INT
+);
+
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY,
+    OrderDate DATE
+);
+
+CREATE TABLE CustomerOrders (
+    CustomerID INT,
+    OrderID INT
+);
+
+// INSERT RECORDS
+INSERT INTO Categories VALUES
+(1,'Premium'),(2,'Regular'),(3,'Gold');
+
+INSERT INTO Customers VALUES
+(101,'Soham','Pune',1),
+(102,'Rahul','Mumbai',2),
+(103,'Priya','Nashik',1),
+(104,'Amit','Jalgaon',3);
+
+INSERT INTO Orders VALUES
+(201,'2026-11-10'),
+(202,'2026-11-12'),
+(203,'2026-11-15');
+
+INSERT INTO CustomerOrders VALUES
+(101,201),(101,202),(102,203);
+
+// Q1. Customer names with category names
+SELECT C.CustomerName, CA.CategoryName
+FROM Customers C
+LEFT OUTER JOIN Categories CA
+ON C.CategoryID = CA.CategoryID;
+
+// Q2. Customer name, city and category
+SELECT C.CustomerName, C.City, CA.CategoryName
+FROM Customers C
+LEFT OUTER JOIN Categories CA
+ON C.CategoryID = CA.CategoryID;
+
+// Q3. Customers belonging to Premium category
+SELECT C.CustomerName, CA.CategoryName
+FROM Customers C
+LEFT OUTER JOIN Categories CA
+ON C.CategoryID = CA.CategoryID
+WHERE CA.CategoryName = 'Premium';
+
+// Q4. Customer names with order dates
+SELECT C.CustomerName, O.OrderDate
+FROM Customers C
+LEFT OUTER JOIN CustomerOrders CO
+ON C.CustomerID = CO.CustomerID
+LEFT OUTER JOIN Orders O
+ON CO.OrderID = O.OrderID;

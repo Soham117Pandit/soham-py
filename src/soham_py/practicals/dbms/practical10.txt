@@ -1,0 +1,99 @@
+Q.10 Employees (columns: EmployeeID, FirstName, LastName, Salary)
+Salary Updates (columns: UpdateID, EmployeeID, NewSalary, UpdateDate)
+ Create a PL/SQL block that includes the following components:
+Cursor Declaration: Declare an explicit cursor named employee cursor to retrieve employee records from the Employees table. Cursor FOR LOOP: Use a FOR LOOP to iterate through the employees in the cursor. Salary Update: For each employee in the cursor, check if there is a corresponding record in the Salary Updates table with a New Salary value. If such a record exists, update the employee's salary in the Employees table with the new salary value. If there is no record in the Salary Updates table for the employee, leave the salary unchanged.
+
+
+
+
+
+
+CREATE TABLE Employees (
+    EmployeeID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Salary DECIMAL(10,2)
+);
+
+
+CREATE TABLE SalaryUpdates (
+    UpdateID INT PRIMARY KEY AUTO_INCREMENT,
+    EmployeeID INT,
+    NewSalary DECIMAL(10,2),
+    UpdateDate DATE,
+    FOREIGN KEY (EmployeeID)
+    REFERENCES Employees(EmployeeID)
+);
+
+
+INSERT INTO Employees VALUES
+(1, 'Rahul', 'Sharma', 40000),
+(2, 'Priya', 'Patil', 45000),
+(3, 'Amit', 'Joshi', 50000),
+(4, 'Sneha', 'Deshmukh', 55000);
+
+
+
+INSERT INTO SalaryUpdates
+(EmployeeID, NewSalary, UpdateDate)
+VALUES
+(1, 45000, CURDATE()),
+(3, 55000, CURDATE());
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateEmployeeSalary()
+BEGIN
+    DECLARE v_EmployeeID INT;
+    DECLARE v_NewSalary DECIMAL(10,2);
+    DECLARE v_Done INT DEFAULT 0;
+
+    DECLARE employee_cursor CURSOR FOR
+        SELECT EmployeeID FROM Employees;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+        SET v_Done = 1;
+
+    OPEN employee_cursor;
+
+    employee_loop: LOOP
+
+        FETCH employee_cursor INTO v_EmployeeID;
+
+        IF v_Done = 1 THEN
+            LEAVE employee_loop;
+        END IF;
+
+        SET v_NewSalary = NULL;
+
+        SELECT MAX(NewSalary)
+        INTO v_NewSalary
+        FROM SalaryUpdates
+        WHERE EmployeeID = v_EmployeeID;
+
+        IF v_NewSalary IS NOT NULL THEN
+            UPDATE Employees
+            SET Salary = v_NewSalary
+            WHERE EmployeeID = v_EmployeeID;
+        END IF;
+
+    END LOOP;
+
+    CLOSE employee_cursor;
+
+END //
+
+DELIMITER ;
+
+
+
+
+CALL UpdateEmployeeSalary();
+
+
+
+
+
+SELECT * FROM Employees;

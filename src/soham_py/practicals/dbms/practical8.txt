@@ -1,0 +1,116 @@
+Q.08 Functions: Named PL/SQL Block: PL/SQL Stored Function.
+Student GPA Calculation
+Consider university database with the following tables:
+Students (columns: StudentID, FirstName, LastName)
+Courses (columns: CourseID, CourseName)
+Grades (columns: GradeID, StudentID, CourseID, Grade, CreditHours)
+Create a PL/SQL function that takes a student's ID as input and does the following:Calculates the Grade Point Average (GPA) for the student based on their grades and credit
+hours.Returns the GPA as the function's result.
+
+
+
+
+CREATE TABLE Students (
+    StudentID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50)
+);
+
+
+
+CREATE TABLE Courses (
+    CourseID INT PRIMARY KEY,
+    CourseName VARCHAR(100)
+);
+
+
+
+
+CREATE TABLE Grades (
+    GradeID INT PRIMARY KEY AUTO_INCREMENT,
+    StudentID INT,
+    CourseID INT,
+    Grade DECIMAL(4,2),
+    CreditHours INT,
+    FOREIGN KEY (StudentID) REFERENCES Students(StudentID),
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+);
+
+
+
+
+
+INSERT INTO Students VALUES
+(1, 'Rahul', 'Sharma'),
+(2, 'Priya', 'Patil'),
+(3, 'Amit', 'Joshi');
+
+
+
+INSERT INTO Courses VALUES
+(101, 'DBMS'),
+(102, 'Python'),
+(103, 'Java'),
+(104, 'Mathematics');
+
+
+
+INSERT INTO Grades
+(StudentID, CourseID, Grade, CreditHours)
+VALUES
+(1, 101, 9, 4),
+(1, 102, 8, 3),
+(1, 103, 10, 3),
+(1, 104, 7, 2),
+
+(2, 101, 8, 4),
+(2, 102, 9, 3),
+(2, 103, 8, 3),
+
+(3, 101, 7, 4),
+(3, 102, 8, 3),
+(3, 103, 9, 3);
+
+
+
+
+
+DELIMITER //
+
+CREATE FUNCTION CalculateGPA(p_StudentID INT)
+RETURNS DECIMAL(5,2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE v_GPA DECIMAL(5,2);
+
+    SELECT
+        SUM(Grade * CreditHours) / SUM(CreditHours)
+    INTO v_GPA
+    FROM Grades
+    WHERE StudentID = p_StudentID;
+
+    RETURN IFNULL(v_GPA, 0);
+
+END //
+
+DELIMITER ;
+
+
+
+
+SELECT CalculateGPA(1) AS GPA;
+
+
+
+
+SELECT
+    StudentID,
+    FirstName,
+    LastName,
+    CalculateGPA(StudentID) AS GPA
+FROM Students;
+
+
+
+

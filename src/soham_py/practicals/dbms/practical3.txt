@@ -1,0 +1,84 @@
+Q.3 create the following tables and perform the following tasks:
+Students(StudentID, FirstName, LastName, DepartmentID, Marks)
+Departments(DepartmentID, DepartmentName)
+StudentCourses(StudentID, CourseID)
+Courses(CourseID, CourseName)
+Q1. Display student names along with their department names.
+Q2. Display student name and marks along with department name.
+Q3. Display only students who belong to the Computer department.
+Q4. Display student names along with the courses they have enrolled in. (Using Three Tables)
+
+
+
+
+
+// CREATE DATABASE
+CREATE DATABASE StudentDB;
+USE StudentDB;
+
+// CREATE TABLES
+CREATE TABLE Departments (
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName VARCHAR(50)
+);
+
+CREATE TABLE Students (
+    StudentID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    DepartmentID INT,
+    Marks INT
+);
+
+CREATE TABLE Courses (
+    CourseID INT PRIMARY KEY,
+    CourseName VARCHAR(100)
+);
+
+CREATE TABLE StudentCourses (
+    StudentID INT,
+    CourseID INT
+);
+
+// INSERT RECORDS
+INSERT INTO Departments VALUES
+(1,'Computer'),(2,'IT'),(3,'Mechanical');
+
+INSERT INTO Students VALUES
+(101,'Soham','Pandit',1,85),
+(102,'Rahul','Patil',2,75),
+(103,'Priya','Sharma',1,90),
+(104,'Amit','Kumar',3,65);
+
+INSERT INTO Courses VALUES
+(201,'DBMS'),(202,'Python'),(203,'Java');
+
+INSERT INTO StudentCourses VALUES
+(101,201),(101,202),(102,203),(103,201);
+
+// Q1. Student names with department names
+SELECT S.FirstName, S.LastName, D.DepartmentName
+FROM Students S
+INNER JOIN Departments D
+ON S.DepartmentID = D.DepartmentID;
+
+// Q2. Student name, marks and department
+SELECT S.FirstName, S.LastName, S.Marks, D.DepartmentName
+FROM Students S
+INNER JOIN Departments D
+ON S.DepartmentID = D.DepartmentID;
+
+// Q3. Students belonging to Computer department
+SELECT S.FirstName, S.LastName, D.DepartmentName
+FROM Students S
+INNER JOIN Departments D
+ON S.DepartmentID = D.DepartmentID
+WHERE D.DepartmentName = 'Computer';
+
+// Q4. Student names with courses (Three Tables)
+SELECT S.FirstName, S.LastName, C.CourseName
+FROM Students S
+INNER JOIN StudentCourses SC
+ON S.StudentID = SC.StudentID
+INNER JOIN Courses C
+ON SC.CourseID = C.CourseID;

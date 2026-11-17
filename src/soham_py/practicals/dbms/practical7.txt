@@ -1,0 +1,125 @@
+Q.07 Stored Procedures: Named PL/SQL Block: PL/SQL Stored Procedure.
+Products (columns: ProductID, ProductName, Category, Price, StockQuantity)
+Orders (columns: OrderID, OrderDate)
+OrderItems (columns: OrderItemID, OrderID, ProductID, Quantity)
+Create a PL/SQL stored procedure that takes a product ID and a quantity as input and does the following:Checks if the requested quantity is available in stock.If available, updates the stock quantity in the "Products" table and records the order in the "Orders" and "OrderItems" tables.If not available, raises an error message indicating insufficient stock.
+
+
+
+
+
+CREATE TABLE Products (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(100),
+    Category VARCHAR(50),
+    Price DECIMAL(10,2),
+    StockQuantity INT
+);
+
+
+
+
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY AUTO_INCREMENT,
+    OrderDate DATE
+);
+
+
+
+CREATE TABLE OrderItems (
+    OrderItemID INT PRIMARY KEY AUTO_INCREMENT,
+    OrderID INT,
+    ProductID INT,
+    Quantity INT,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+
+
+
+INSERT INTO Products VALUES
+(101, 'Laptop', 'Electronics', 50000, 10),
+(102, 'Mobile', 'Electronics', 20000, 15),
+(103, 'Keyboard', 'Accessories', 1000, 20),
+(104, 'Mouse', 'Accessories', 500, 5);
+
+
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE PlaceOrder(
+    IN p_ProductID INT,
+    IN p_Quantity INT
+)
+BEGIN
+    DECLARE v_Stock INT;
+    DECLARE v_OrderID INT;
+
+    -- Check available stock
+    SELECT StockQuantity
+    INTO v_Stock
+    FROM Products
+    WHERE ProductID = p_ProductID;
+
+    -- Check requested quantity
+    IF p_Quantity <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid quantity';
+
+    ELSEIF v_Stock >= p_Quantity THEN
+
+        -- Update product stock
+        UPDATE Products
+        SET StockQuantity = StockQuantity - p_Quantity
+        WHERE ProductID = p_ProductID;
+
+        -- Insert order
+        INSERT INTO Orders (OrderDate)
+        VALUES (CURDATE());
+
+        SET v_OrderID = LAST_INSERT_ID();
+
+        -- Insert order item
+        INSERT INTO OrderItems
+        (OrderID, ProductID, Quantity)
+        VALUES
+        (v_OrderID, p_ProductID, p_Quantity);
+
+        SELECT 'Order placed successfully' AS Message;
+
+    ELSE
+
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Insufficient stock';
+
+    END IF;
+
+END //
+
+DELIMITER ;
+
+
+
+
+
+CALL PlaceOrder(101, 3);
+
+
+
+CALL PlaceOrder(104, 10);
+
+
+
+
+SELECT * FROM Products;
+
+
+
+SELECT * FROM Orders;
+
+
+
+SELECT * FROM OrderItems;
