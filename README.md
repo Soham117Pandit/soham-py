@@ -10,15 +10,13 @@ SohamPy is a lightweight Python package that bundles college practical programs 
 
 ## Supported Subjects
 
-| Key    | Subject                      | Practicals |
-|--------|------------------------------|------------|
-| `ds`   | Data Science                 | 10         |
-| `wt`   | Web Technology               | 10         |
-| `dbms` | Database Management Systems  | 10         |
+| Key    | Subject                      | Description                                   |
+|--------|------------------------------|-----------------------------------------------|
+| `ds`   | Data Science                 | Python data analysis, ML, statistics          |
+| `wt`   | Web Technology               | XML, DTD, XSD, HTML, client-side technologies |
+| `dbms` | Database Management Systems  | SQL queries, PL/SQL, schema design, MongoDB   |
 
-**Total: 30 practical files.**
-
-> **Note:** SQL, MySQL, and MongoDB are topics within DBMS — they are not separate subjects.
+> **Note:** SQL, MySQL, and MongoDB are topics within DBMS — they are not separate subjects. Practical files are dynamically discovered and numbered (e.g. `practical1.txt`, `practical2.txt`, etc.).
 
 ---
 
