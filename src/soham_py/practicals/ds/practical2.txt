@@ -1,61 +1,53 @@
-Write a Python program to perform hypothesis testing on federal-firearm-licensees.csv dataset. Select appropriate hypothesis testing strategies such as the student's t-test, z test, chi-square test etc.
 
-
-
-pip install pandas numpy scipy
-
-
-
-
-# Experiment 2: Hypothesis Testing
-
-# Step 1: Import required libraries
 import pandas as pd
-import numpy as np
 from scipy import stats
 
-# Step 2: Load dataset
-licenses = pd.read_csv(
-    "federal-firearm-licensees.csv",
-    low_memory=False
-)
+# Load dataset
+licenses = pd.read_csv("federal-firearm-licensees.csv")
 
-# Step 3: Display dataset columns
-print("Columns in Dataset:")
-print(licenses.columns)
+print("First 5 Records:")
+print(licenses.head())
 
-# Step 4: Count licenses according to ZIP code
-zip_counts = licenses['PREMISE_ZIP_CODE'].value_counts()
+print("\nColumns in Dataset:")
+print(licenses.columns.tolist())
 
-print("\nLicense counts by ZIP code:")
-print(zip_counts.head())
+# Count licenses by ZIP code
+zip_counts = licenses['PREMISE_ZIP_CODE'].dropna().value_counts()
 
-# Step 5: Calculate mean
+# Calculate descriptive statistics
 mean_zip = zip_counts.mean()
 
-print("\nMean of license counts by ZIP code:", mean_zip)
+print("\nTotal ZIP Codes:", len(zip_counts))
+print("Mean of license counts:", round(mean_zip, 4))
+print("Standard Deviation:", round(zip_counts.std(), 4))
 
-# Step 6: Define hypotheses
-# H0: Population mean = 2.75
-# H1: Population mean != 2.75
-
+# Define hypotheses
 pop_mean = 2.75
+alpha = 0.05
 
-# Step 7: Perform one-sample t-test
+print("\nH0: Mean license count = 2.75")
+print("H1: Mean license count != 2.75")
+
+# Perform one-sample t-test
 t_stat, p_val = stats.ttest_1samp(
-    a=zip_counts,
+    zip_counts,
     popmean=pop_mean
 )
 
-print("\nT-statistic:", round(t_stat, 4))
+# Display results
+print("\n--- One Sample T-Test Results ---")
+print("Hypothesized Mean:", pop_mean)
+print("Sample Mean:", round(mean_zip, 4))
+print("T-statistic:", round(t_stat, 4))
 print("P-value:", round(p_val, 4))
+print("Significance Level:", alpha)
 
-# Step 8: Check significance level
-alpha = 0.05
-
+# Decision
 if p_val < alpha:
     print("\nReject Null Hypothesis (H0)")
-    print("Mean differs significantly from 2.75.")
+    print("Mean license count differs significantly from 2.75.")
 else:
     print("\nFail to Reject Null Hypothesis (H0)")
-    print("No significant difference found.")
+    print("Insufficient evidence that the mean differs from 2.75.")
+
+print("\nProgram Executed Successfully!")

@@ -1,81 +1,162 @@
-Use BigMart Sales Data from Kaggle. Write a program to demonstrate Pandas indexing capabilities, identify null values and fill them or drop them from the dataset. Also demonstrate merging, joining and concatenating data frames using Pandas.
-
-
-
-
 
 import pandas as pd
+import numpy as np
 
-# Load dataset
+# 1. Load Dataset
 df = pd.read_csv("BigMartData.csv")
 
-print("BigMart dataset loaded successfully.")
+print("First 5 Records:")
 print(df.head())
 
-# 1. Single-column indexing
-print("\nSingle-column indexing:")
-print(df["Item_Identifier"].head())
+print("\nDataset Shape:", df.shape)
 
-# 2. Multiple-column indexing
-print("\nMultiple-column indexing:")
-print(df[["Item_Identifier", "Item_Weight", "Item_Visibility"]].head())
+print("\nDataset Information:")
+df.info()
 
-# 3. Row and column indexing using iloc
+# 2. Pandas Indexing
+
+# Label-based indexing using loc
+print("\nUsing loc:")
+print(df.loc[0:4, ["Item_Identifier", "Item_Type", "Item_MRP"]])
+
+# Position-based indexing using iloc
 print("\nUsing iloc:")
-print(df.iloc[0:5, 0:3])
+print(df.iloc[0:5, 0:4])
 
-# 4. Identify missing values
-print("\nMissing values before treatment:")
+# Access a single value using at
+print("\nUsing at:")
+print(df.at[0, "Item_Identifier"])
+
+# Access a single value using iat
+print("\nUsing iat:")
+print(df.iat[0, 1])
+
+# Boolean indexing
+print("\nItems with MRP greater than 200:")
+print(df[df["Item_MRP"] > 200].head())
+
+# 3. Identify Missing Values
+print("\nMissing Values:")
 print(df.isnull().sum())
 
-# 5. Fill missing values
-if "Item_Weight" in df.columns:
-    df["Item_Weight"] = df["Item_Weight"].fillna(
-        df["Item_Weight"].mean()
+print("\nTotal Missing Values:")
+print(df.isnull().sum().sum())
+
+# 4. Drop Missing Values
+df_dropped = df.dropna()
+
+print("\nShape Before Dropping:", df.shape)
+print("Shape After Dropping:", df_dropped.shape)
+
+# 5. Fill Missing Values
+df_clean = df.copy()
+
+# Fill numerical columns with median
+numeric_columns = df_clean.select_dtypes(
+    include=np.number
+).columns
+
+for col in numeric_columns:
+    df_clean[col] = df_clean[col].fillna(
+        df_clean[col].median()
     )
 
-if "Outlet_Size" in df.columns and not df["Outlet_Size"].mode().empty:
-    df["Outlet_Size"] = df["Outlet_Size"].fillna(
-        df["Outlet_Size"].mode()[0]
-    )
+# Fill categorical columns with mode
+categorical_columns = df_clean.select_dtypes(
+    include=["object", "str"]
+).columns
 
-print("\nMissing values after treatment:")
-print(df.isnull().sum())
+for col in categorical_columns:
+    if df_clean[col].isnull().any():
+        df_clean[col] = df_clean[col].fillna(
+            df_clean[col].mode()[0]
+        )
 
-# 6. Create another DataFrame
-df_outlet = pd.DataFrame({
-    "Outlet_Identifier": ["OUT010", "OUT017", "OUT027"],
-    "City": ["Mumbai", "Delhi", "Pune"],
-    "Region": ["West", "North", "West"]
-})
+print("\nMissing Values After Filling:")
+print(df_clean.isnull().sum())
 
-# 7. Merge DataFrames
+print("\nTotal Missing Values After Filling:",
+      df_clean.isnull().sum().sum())
+
+# 6. Merging DataFrames
+
+# Create Record_ID for merging
+df_merge = df_clean.reset_index().rename(
+    columns={"index": "Record_ID"}
+)
+
+df1 = df_merge[
+    ["Record_ID", "Item_Identifier", "Item_MRP"]
+]
+
+df2 = df_merge[
+    ["Record_ID", "Item_Type", "Outlet_Type"]
+]
+
 merged_df = pd.merge(
-    df,
-    df_outlet,
-    on="Outlet_Identifier",
-    how="left"
+    df1, df2, on="Record_ID"
 )
 
 print("\nMerged DataFrame:")
-print(merged_df[["Outlet_Identifier", "City", "Region"]].head(10))
+print(merged_df.head())
+print("Merged Shape:", merged_df.shape)
 
-# 8. Join DataFrames
-left = df.set_index("Outlet_Identifier")
-right = df_outlet.set_index("Outlet_Identifier")
+# 7. Joining DataFrames
+left_df = df_clean[
+    ["Item_Identifier", "Item_MRP"]
+].copy()
 
-joined_df = left.join(right, how="left", rsuffix="_outlet")
+right_df = df_clean[
+    ["Outlet_Identifier", "Outlet_Type"]
+].copy()
+
+joined_df = left_df.join(right_df)
 
 print("\nJoined DataFrame:")
-print(joined_df[["City", "Region"]].head(10))
+print(joined_df.head())
+print("Joined Shape:", joined_df.shape)
 
-# 9. Concatenate DataFrames
-concat_df = pd.concat(
-    [df.head(3), df.tail(3)],
-    axis=0
+# 8. Concatenating DataFrames
+
+# Row-wise concatenation
+df_part1 = df_clean.iloc[:100].copy()
+df_part2 = df_clean.iloc[100:200].copy()
+
+concat_rows = pd.concat(
+    [df_part1, df_part2],
+    axis=0,
+    ignore_index=True
 )
 
-print("\nConcatenated DataFrame:")
-print(concat_df)
+print("\nRow-wise Concatenation:")
+print(concat_rows.head())
+print("Concatenated Shape:", concat_rows.shape)
 
-print("\nFinal dataset shape:", df.shape)
+# Column-wise concatenation
+df_left = df_clean[
+    ["Item_Identifier", "Item_MRP"]
+]
+
+df_right = df_clean[
+    ["Item_Type", "Outlet_Type"]
+]
+
+concat_columns = pd.concat(
+    [df_left, df_right],
+    axis=1
+)
+
+print("\nColumn-wise Concatenation:")
+print(concat_columns.head())
+print("Concatenated Shape:", concat_columns.shape)
+
+# 9. Final Cleaned Dataset
+print("\nFinal Cleaned Dataset:")
+print(df_clean.head())
+
+print("\nFinal Dataset Shape:", df_clean.shape)
+
+print("\nTotal Missing Values:",
+      df_clean.isnull().sum().sum())
+
+print("\nPractical 7 Executed Successfully!")
